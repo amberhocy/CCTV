@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CCTV 九宮格（靜態互動頁）</title>
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="stylesheet" href="https://unpkg.com/antd@6.3.5/dist/reset.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://unpkg.com/video.js@8/dist/video-js.min.css" />
+    <style>
+      :root {
+        --bg: #0b0f14;
+        --panel: #121826;
+        --border: rgba(255, 255, 255, 0.12);
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.65);
+        --primary: #ff4d4f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          'Noto Sans TC',
+          'PingFang TC',
+          'Microsoft JhengHei',
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 16px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .title {
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        font-size: 16px;
+      }
+
+      .hint {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .stage {
+        background: #000;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        padding: 10px;
+        background: var(--panel);
+      }
+
+      .tile {
+        position: relative;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+        background: #000;
+        aspect-ratio: 16 / 9;
+        cursor: pointer;
+      }
+
+      .tile.is-active {
+        outline: 2px solid var(--primary);
+        outline-offset: 0;
+      }
+
+      .tile video {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+      }
+
+      .tile .empty {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        font-size: 12px;
+        background: #000;
+      }
+
+      .single {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        background: #000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .single.is-visible {
+        display: flex;
+      }
+
+      .single video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+      }
+
+      .back {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 2;
+        border: 1px solid var(--border);
+        background: rgba(18, 24, 38, 0.8);
+        color: var(--text);
+        padding: 8px 10px;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+
+      .bar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        align-items: center;
+        padding: 10px;
+        border-top: 1px solid var(--border);
+        background: var(--panel);
+      }
+
+      .bar-right {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .pill {
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+        padding: 8px 10px;
+        border-radius: 999px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+
+      .pill:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .vjs-control-bar {
+        background: rgba(0, 0, 0, 0.55) !important;
+      }
+
+      @media (max-width: 720px) {
+        .grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="header">
+        <div>
+          <div class="title">CCTV 九宮格（靜態互動頁）</div>
+          <div class="hint">點擊任一格進入單片；雙擊任一格可直接全螢幕。</div>
+        </div>
+        <div class="hint">建議用 `npm run dev` 後開啟 `/interactive.html`</div>
+      </div>
+
+      <div class="stage" id="stage">
+        <div class="single" id="single">
+          <button class="back" id="backBtn">返回九宮格</button>
+          <video id="singleVideo" muted autoplay playsinline loop preload="metadata"></video>
+        </div>
+
+        <div class="grid" id="grid"></div>
+
+        <div class="bar">
+          <div>
+            <!-- video.js 會接管這個 element，作為「統一控制列」 -->
+            <video id="controller" class="video-js vjs-theme-city" playsinline></video>
+          </div>
+          <div class="bar-right">
+            <button class="pill" id="syncBtn">同步</button>
+            <button class="pill" id="downloadBtn">下載</button>
+            <button class="pill" id="fsBtn">全螢幕</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/video.js@8/dist/video.min.js"></script>
+    <script>
+      // 注意：此頁面會以「相對路徑」讀取 demo資料 影片。
+      // 請用 Vite dev server 開啟（/interactive.html），避免 file:// 的 CORS/路徑問題。
+      const videoUrls = [
+        // 這裡示範用既有 demo資料（若檔名更動，可自行調整）
+        './demo資料/包裹案件資料/videoSample/20260227_TW2604764049146_觀音新坡 - 智取店_破損包裹-1-.mp4',
+        './demo資料/包裹案件資料/videoSample/20260227_TW2604764049146_觀音新坡 - 智取店_破損包裹-2.mp4',
+        './demo資料/包裹案件資料/videoSample/20260227_TW2604764049146_觀音新坡 - 智取店_破損包裹-3.mp4',
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      ]
+
+      const gridEl = document.getElementById('grid')
+      const singleEl = document.getElementById('single')
+      const backBtn = document.getElementById('backBtn')
+      const singleVideo = document.getElementById('singleVideo')
+      const syncBtn = document.getElementById('syncBtn')
+      const downloadBtn = document.getElementById('downloadBtn')
+      const fsBtn = document.getElementById('fsBtn')
+
+      /** @type {(HTMLVideoElement|null)[]} */
+      const gridVideos = []
+      let activeIdx = 0
+      let isSingle = false
+
+      const controller = videojs('controller', {
+        controls: true,
+        autoplay: false,
+        preload: 'metadata',
+        fluid: true,
+        playsinline: true,
+      })
+
+      function setActive(idx) {
+        activeIdx = idx
+        for (let i = 0; i < gridEl.children.length; i++) {
+          gridEl.children[i].classList.toggle('is-active', i === idx)
+        }
+        const url = videoUrls[idx]
+        if (!url) {
+          controller.src([])
+          return
+        }
+        controller.src({ src: url, type: 'video/mp4' })
+      }
+
+      function enterSingle(idx) {
+        isSingle = true
+        setActive(idx)
+        gridEl.style.display = 'none'
+        singleEl.classList.add('is-visible')
+        const url = videoUrls[idx]
+        if (url) singleVideo.src = url
+      }
+
+      function exitSingle() {
+        isSingle = false
+        singleEl.classList.remove('is-visible')
+        gridEl.style.display = ''
+      }
+
+      function requestFullscreen(el) {
+        if (!el) return false
+        const anyEl = el
+        if (el.requestFullscreen) return el.requestFullscreen().then(() => true).catch(() => false)
+        if (anyEl.webkitRequestFullscreen) {
+          anyEl.webkitRequestFullscreen()
+          return Promise.resolve(true)
+        }
+        return Promise.resolve(false)
+      }
+
+      function syncAll() {
+        const t = controller.currentTime() || 0
+        for (const v of gridVideos) {
+          if (!v) continue
+          try {
+            v.currentTime = t
+          } catch {}
+        }
+        try {
+          singleVideo.currentTime = t
+        } catch {}
+      }
+
+      async function downloadActive() {
+        const url = videoUrls[activeIdx]
+        if (!url) return
+        const res = await fetch(url)
+        if (!res.ok) return
+        const blob = await res.blob()
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(blob)
+        a.download = `cctv-${activeIdx + 1}.mp4`
+        a.rel = 'noopener'
+        a.click()
+        URL.revokeObjectURL(a.href)
+      }
+
+      controller.on('play', () => {
+        const list = gridVideos.filter(Boolean)
+        list.forEach((v) => v.play().catch(() => {}))
+        singleVideo.play().catch(() => {})
+      })
+      controller.on('pause', () => {
+        gridVideos.forEach((v) => v && v.pause())
+        singleVideo.pause()
+      })
+      controller.on('ratechange', () => {
+        const r = controller.playbackRate() || 1
+        gridVideos.forEach((v) => {
+          if (!v) return
+          v.playbackRate = r
+        })
+        singleVideo.playbackRate = r
+      })
+      controller.on('volumechange', () => {
+        const m = controller.muted()
+        gridVideos.forEach((v) => {
+          if (!v) return
+          v.muted = m
+        })
+        singleVideo.muted = m
+      })
+      controller.on('seeked', () => syncAll())
+
+      syncBtn.addEventListener('click', () => syncAll())
+      downloadBtn.addEventListener('click', () => downloadActive())
+      fsBtn.addEventListener('click', async () => {
+        const target = isSingle ? singleVideo : gridVideos[activeIdx]
+        await requestFullscreen(target)
+      })
+
+      backBtn.addEventListener('click', () => exitSingle())
+
+      // Render grid
+      for (let i = 0; i < 9; i++) {
+        const tile = document.createElement('div')
+        tile.className = 'tile'
+        const url = videoUrls[i]
+        if (url) {
+          const v = document.createElement('video')
+          v.src = url
+          v.autoplay = true
+          v.muted = true
+          v.loop = true
+          v.playsInline = true
+          v.preload = 'metadata'
+          tile.appendChild(v)
+          gridVideos[i] = v
+        } else {
+          const empty = document.createElement('div')
+          empty.className = 'empty'
+          empty.textContent = '尚無監視器'
+          tile.appendChild(empty)
+          gridVideos[i] = null
+        }
+        tile.addEventListener('click', () => enterSingle(i))
+        tile.addEventListener('dblclick', async (e) => {
+          e.preventDefault()
+          setActive(i)
+          const target = gridVideos[i]
+          await requestFullscreen(target)
+        })
+        gridEl.appendChild(tile)
+      }
+
+      setActive(0)
+    </script>
+  </body>
+</html>
+

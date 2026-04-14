@@ -1,0 +1,2717 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SPX 案件排查中心 — 單檔離線 Demo（內嵌 CSV）</title>
+    <style>
+      /* antd@6.3.5/dist/reset.css — 內嵌，無需 CDN */
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+      }
+      input::-ms-clear,
+      input::-ms-reveal {
+        display: none;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html {
+        font-family: sans-serif;
+        line-height: 1.15;
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+        -ms-overflow-style: scrollbar;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+      }
+
+      body {
+        margin: 0;
+      }
+      [tabindex='-1']:focus {
+        outline: none;
+      }
+      hr {
+        box-sizing: content-box;
+        height: 0;
+        overflow: visible;
+      }
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        margin-top: 0;
+        margin-bottom: 0.5em;
+        font-weight: 500;
+      }
+      p {
+        margin-top: 0;
+        margin-bottom: 1em;
+      }
+      abbr[title],
+      abbr[data-original-title] {
+        -webkit-text-decoration: underline dotted;
+        text-decoration: underline dotted;
+        border-bottom: 0;
+        cursor: help;
+      }
+      address {
+        margin-bottom: 1em;
+        font-style: normal;
+        line-height: inherit;
+      }
+      input[type='text'],
+      input[type='password'],
+      input[type='number'],
+      textarea {
+        -webkit-appearance: none;
+      }
+      ol,
+      ul,
+      dl {
+        margin-top: 0;
+        margin-bottom: 1em;
+      }
+      ol ol,
+      ul ul,
+      ol ul,
+      ul ol {
+        margin-bottom: 0;
+      }
+      dt {
+        font-weight: 500;
+      }
+      dd {
+        margin-bottom: 0.5em;
+        margin-left: 0;
+      }
+      blockquote {
+        margin: 0 0 1em;
+      }
+      dfn {
+        font-style: italic;
+      }
+      b,
+      strong {
+        font-weight: bolder;
+      }
+      small {
+        font-size: 80%;
+      }
+      sub,
+      sup {
+        position: relative;
+        font-size: 75%;
+        line-height: 0;
+        vertical-align: baseline;
+      }
+      sub {
+        bottom: -0.25em;
+      }
+      sup {
+        top: -0.5em;
+      }
+      pre,
+      code,
+      kbd,
+      samp {
+        font-size: 1em;
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+      }
+      pre {
+        margin-top: 0;
+        margin-bottom: 1em;
+        overflow: auto;
+      }
+      figure {
+        margin: 0 0 1em;
+      }
+      img {
+        vertical-align: middle;
+        border-style: none;
+      }
+      a,
+      area,
+      button,
+      [role='button'],
+      input:not([type='range']),
+      label,
+      select,
+      summary,
+      textarea {
+        touch-action: manipulation;
+      }
+      table {
+        border-collapse: collapse;
+      }
+      caption {
+        padding-top: 0.75em;
+        padding-bottom: 0.3em;
+        text-align: left;
+        caption-side: bottom;
+      }
+      input,
+      button,
+      select,
+      optgroup,
+      textarea {
+        margin: 0;
+        color: inherit;
+        font-size: inherit;
+        font-family: inherit;
+        line-height: inherit;
+      }
+      button,
+      input {
+        overflow: visible;
+      }
+      button,
+      select {
+        text-transform: none;
+      }
+      button,
+      html [type='button'],
+      [type='reset'],
+      [type='submit'] {
+        -webkit-appearance: button;
+      }
+      button::-moz-focus-inner,
+      [type='button']::-moz-focus-inner,
+      [type='reset']::-moz-focus-inner,
+      [type='submit']::-moz-focus-inner {
+        padding: 0;
+        border-style: none;
+      }
+      input[type='radio'],
+      input[type='checkbox'] {
+        box-sizing: border-box;
+        padding: 0;
+      }
+      input[type='date'],
+      input[type='time'],
+      input[type='datetime-local'],
+      input[type='month'] {
+        -webkit-appearance: listbox;
+      }
+      textarea {
+        overflow: auto;
+        resize: vertical;
+      }
+      fieldset {
+        min-width: 0;
+        margin: 0;
+        padding: 0;
+        border: 0;
+      }
+      legend {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 0.5em;
+        padding: 0;
+        color: inherit;
+        font-size: 1.5em;
+        line-height: inherit;
+        white-space: normal;
+      }
+      progress {
+        vertical-align: baseline;
+      }
+      [type='number']::-webkit-inner-spin-button,
+      [type='number']::-webkit-outer-spin-button {
+        height: auto;
+      }
+      [type='search'] {
+        outline-offset: -2px;
+        -webkit-appearance: none;
+      }
+      [type='search']::-webkit-search-cancel-button,
+      [type='search']::-webkit-search-decoration {
+        -webkit-appearance: none;
+      }
+      ::-webkit-file-upload-button {
+        font: inherit;
+        -webkit-appearance: button;
+      }
+      output {
+        display: inline-block;
+      }
+      summary {
+        display: list-item;
+      }
+      template {
+        display: none;
+      }
+      [hidden] {
+        display: none !important;
+      }
+
+      /* 與 src/twtc-tokens.css、App.css 對齊 */
+      :root {
+        --twtc-color-primary: #ee4d2d;
+        --twtc-color-primary-hover: #f05a41;
+        --twtc-color-primary-active: #d7321a;
+        --twtc-color-link: #0088ff;
+        --twtc-color-error: #ff424f;
+        --twtc-color-text: #262626;
+        --twtc-color-text-secondary: #595959;
+        --twtc-color-text-tertiary: #8c8c8c;
+        --twtc-color-bg-layout: #f5f5f5;
+        --twtc-color-bg-container: #ffffff;
+        --twtc-color-fill-secondary: #fafafa;
+        --twtc-color-border: #f0f0f0;
+        --twtc-color-border-secondary: #e8e8e8;
+        --twtc-menu-selected-bg: #fff1f0;
+        --twtc-menu-selected-text: #cf1322;
+        --twtc-radius-sm: 4px;
+        --twtc-radius-md: 8px;
+        --twtc-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04);
+        /* demo 內既有變數別名 */
+        --bg: var(--twtc-color-bg-container);
+        --bg-layout: var(--twtc-color-bg-layout);
+        --border: var(--twtc-color-border);
+        --text: var(--twtc-color-text);
+        --muted: var(--twtc-color-text-tertiary);
+        --primary: var(--twtc-color-primary);
+        --link: var(--twtc-color-link);
+        --fill: var(--twtc-color-fill-secondary);
+        --radius-sm: var(--twtc-radius-sm);
+        --radius-md: var(--twtc-radius-md);
+        --shadow: var(--twtc-shadow-card);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          'Noto Sans TC',
+          'PingFang TC',
+          'Microsoft JhengHei',
+          sans-serif;
+        color: var(--text);
+        background: var(--bg);
+        font-size: 14px;
+      }
+
+      .file-warn {
+        margin: 0;
+        padding: 10px 16px;
+        background: #fff7e6;
+        border-bottom: 1px solid #ffd591;
+        color: #ad6800;
+        font-size: 13px;
+      }
+
+      .standalone-banner {
+        background: #e6f4ff !important;
+        border-bottom: 1px solid #91caff !important;
+        color: #0958d9 !important;
+      }
+
+      .standalone-banner code {
+        font-size: 12px;
+        padding: 1px 6px;
+        background: rgba(255, 255, 255, 0.75);
+        border-radius: 4px;
+      }
+
+      .load-err {
+        margin: 12px 16px;
+        padding: 12px;
+        background: #fff2f0;
+        border: 1px solid #ffccc7;
+        border-radius: var(--radius-sm);
+        color: #a8071a;
+        font-size: 13px;
+      }
+
+      .topbar {
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        border-bottom: 1px solid var(--twtc-color-border-secondary);
+        background: var(--twtc-color-bg-container);
+        position: sticky;
+        top: 0;
+        z-index: 1001;
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .logo-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        background-color: var(--twtc-color-primary);
+        color: #fff;
+        flex-shrink: 0;
+      }
+
+      .logo-icon svg {
+        display: block;
+      }
+
+      .logo-text {
+        font-weight: 600;
+        font-size: 15px;
+        color: var(--twtc-color-text);
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .user-trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 8px;
+        margin: 0;
+        border: none;
+        border-radius: var(--twtc-radius-sm);
+        background: transparent;
+        font: inherit;
+        cursor: pointer;
+        color: var(--twtc-color-text);
+        transition: background-color 0.2s ease;
+      }
+
+      .user-trigger:hover {
+        background: var(--twtc-color-bg-layout);
+      }
+
+      .avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background-color: #fde3cf;
+        color: #d46b08;
+        display: grid;
+        place-items: center;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .shell {
+        display: grid;
+        grid-template-columns: 232px 1fr;
+        min-height: calc(100vh - 48px);
+      }
+
+      .sider {
+        border-right: 1px solid var(--twtc-color-border-secondary);
+        background: var(--twtc-color-bg-layout);
+        padding: 8px 0 48px;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        margin: 2px 8px;
+        width: calc(100% - 16px);
+        border-radius: var(--twtc-radius-sm);
+        color: var(--twtc-color-text);
+        cursor: default;
+        font-size: 14px;
+        transition: background-color 0.2s ease;
+      }
+
+      .nav-item:hover:not(.is-active) {
+        background: #ebebeb;
+      }
+
+      .nav-item.is-active {
+        background: var(--twtc-menu-selected-bg);
+        color: var(--twtc-menu-selected-text);
+        font-weight: 600;
+        box-shadow: inset 3px 0 0 var(--twtc-menu-selected-text);
+      }
+
+      .nav-item .nav-ico {
+        width: 18px;
+        text-align: center;
+        opacity: 0.85;
+      }
+
+      .main {
+        padding: 0;
+        min-width: 0;
+        background: var(--bg-layout);
+      }
+
+      .breadcrumb-bar {
+        padding: 10px 16px;
+        background: var(--twtc-color-fill-secondary);
+        border-bottom: 1px solid var(--twtc-color-border);
+        font-size: 13px;
+        color: var(--twtc-color-text-tertiary);
+      }
+
+      .breadcrumb-bar span + span::before {
+        content: ' / ';
+        color: var(--twtc-color-border-secondary);
+        margin: 0 2px;
+      }
+
+      .breadcrumb-bar span:last-child {
+        color: var(--twtc-color-text);
+        font-weight: 500;
+      }
+
+      .page-head {
+        padding: 16px 16px 8px;
+        margin-bottom: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .page-title {
+        margin: 0 0 4px;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 1.35;
+        color: var(--twtc-color-text);
+      }
+
+      .page-desc {
+        margin: 0;
+        font-size: 13px;
+        color: var(--twtc-color-text-tertiary);
+        max-width: 720px;
+        line-height: 1.55;
+      }
+
+      .page-head--live {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px 16px;
+      }
+
+      .page-head-main {
+        flex: 1 1 280px;
+        min-width: 0;
+      }
+
+      .page-head-toolbar {
+        flex-shrink: 0;
+      }
+
+      .content-inner {
+        padding: 0 16px 24px;
+      }
+
+      .tabs {
+        display: flex;
+        gap: 6px;
+        margin-top: 12px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+
+      .content-inner > .tabs {
+        margin-top: 0;
+      }
+
+      .tab {
+        padding: 8px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--twtc-color-border-secondary);
+        background: var(--twtc-color-bg-container);
+        cursor: pointer;
+        font: inherit;
+        font-size: 13px;
+        color: var(--twtc-color-text-secondary);
+        transition:
+          color 0.2s ease,
+          border-color 0.2s ease,
+          background-color 0.2s ease;
+      }
+
+      .tab:hover {
+        border-color: var(--twtc-color-primary);
+        color: var(--twtc-color-primary);
+      }
+
+      .tab:focus-visible {
+        outline: 2px solid var(--twtc-color-link);
+        outline-offset: 2px;
+      }
+
+      .tab.is-active {
+        border-color: var(--twtc-color-primary);
+        color: var(--twtc-color-primary);
+        font-weight: 500;
+        background: #fffaf8;
+      }
+
+      .card {
+        background: var(--twtc-color-bg-container);
+        border-radius: var(--twtc-radius-sm);
+        box-shadow: var(--twtc-shadow-card);
+        padding: 16px;
+        border: 1px solid var(--twtc-color-border);
+      }
+
+      .filter-bar {
+        margin-bottom: 12px;
+      }
+
+      .filter-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px 16px;
+        align-items: flex-end;
+        background: var(--twtc-color-fill-secondary);
+        border: 1px solid var(--twtc-color-border);
+        border-radius: var(--twtc-radius-md);
+        padding: 14px 12px 12px;
+      }
+
+      .field {
+        flex: 1 1 160px;
+        min-width: 140px;
+      }
+
+      .field label {
+        display: block;
+        font-size: 13px;
+        color: var(--twtc-color-text-secondary);
+        margin-bottom: 6px;
+      }
+
+      .field input,
+      .field select,
+      .field textarea {
+        width: 100%;
+        min-height: 32px;
+        border: 1px solid var(--twtc-color-border-secondary);
+        border-radius: var(--twtc-radius-sm);
+        padding: 6px 11px;
+        font: inherit;
+        background: var(--twtc-color-bg-container);
+        color: var(--twtc-color-text);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .field input:hover,
+      .field select:hover,
+      .field textarea:hover {
+        border-color: var(--twtc-color-primary);
+      }
+
+      .field input:focus-visible,
+      .field select:focus-visible,
+      .field textarea:focus-visible {
+        outline: none;
+        border-color: var(--twtc-color-link);
+        box-shadow: 0 0 0 2px rgba(0, 136, 255, 0.12);
+      }
+
+      .field textarea {
+        min-height: 64px;
+        resize: vertical;
+      }
+
+      .filter-actions {
+        flex: 0 0 auto;
+        display: flex;
+        gap: 8px;
+        padding-bottom: 2px;
+      }
+
+      .btn {
+        height: 32px;
+        border: 1px solid var(--twtc-color-border-secondary);
+        border-radius: var(--twtc-radius-sm);
+        background: var(--twtc-color-bg-container);
+        padding: 0 15px;
+        cursor: pointer;
+        font: inherit;
+        font-size: 13px;
+        color: var(--twtc-color-text);
+        transition:
+          background-color 0.2s ease,
+          border-color 0.2s ease,
+          color 0.2s ease;
+      }
+
+      .btn:hover:not(:disabled) {
+        border-color: var(--twtc-color-primary);
+        color: var(--twtc-color-primary);
+      }
+
+      .btn:focus-visible {
+        outline: 2px solid var(--twtc-color-link);
+        outline-offset: 1px;
+      }
+
+      .btn.primary {
+        background: var(--twtc-color-primary);
+        border-color: var(--twtc-color-primary);
+        color: #fff;
+      }
+
+      .btn.primary:hover:not(:disabled) {
+        background: var(--twtc-color-primary-hover);
+        border-color: var(--twtc-color-primary-hover);
+        color: #fff;
+      }
+
+      .btn.primary:active:not(:disabled) {
+        background: var(--twtc-color-primary-active);
+        border-color: var(--twtc-color-primary-active);
+      }
+
+      .btn.link {
+        border: none;
+        background: none;
+        color: var(--twtc-color-link);
+        padding: 0 4px;
+        height: auto;
+        min-height: 0;
+      }
+
+      .btn.link:hover:not(:disabled) {
+        color: var(--twtc-color-primary-hover);
+      }
+
+      .btn.link:disabled {
+        color: #bfbfbf;
+        cursor: not-allowed;
+      }
+
+      .video-link {
+        font-weight: 500;
+      }
+
+      .video-link-disabled {
+        color: #bfbfbf !important;
+        font-weight: 400;
+      }
+
+      .table-wrap {
+        border: 1px solid var(--twtc-color-border);
+        border-radius: var(--twtc-radius-sm);
+        overflow: auto;
+        max-width: 100%;
+        background: var(--twtc-color-bg-container);
+      }
+
+      table.data {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        color: var(--twtc-color-text);
+      }
+
+      table.case-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: var(--twtc-color-fill-secondary);
+        text-align: left;
+        padding: 12px 10px;
+        border-bottom: 1px solid var(--twtc-color-border);
+        white-space: nowrap;
+        font-weight: 500;
+        color: var(--twtc-color-text);
+        box-shadow: 0 1px 0 var(--twtc-color-border);
+      }
+
+      table.case-table--subtle tbody td {
+        padding: 12px 10px;
+        border-bottom: 1px solid #f5f5f5;
+        vertical-align: top;
+        max-width: 280px;
+        word-break: break-word;
+      }
+
+      table.case-table--subtle tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      table.case-table tbody tr:hover {
+        background: rgba(0, 0, 0, 0.02);
+      }
+
+      .copy-wrap {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        max-width: 100%;
+      }
+
+      .copy-btn {
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        color: var(--muted);
+        padding: 0 4px;
+        font-size: 12px;
+      }
+
+      .copy-btn:hover {
+        color: var(--twtc-color-link);
+      }
+
+      .pill {
+        display: inline-flex;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        border: 1px solid var(--border);
+        background: #fff;
+      }
+
+      .pill.red {
+        color: #cf1322;
+        border-color: rgba(207, 19, 34, 0.25);
+        background: rgba(207, 19, 34, 0.08);
+      }
+
+      .pill.cyan {
+        color: #08979c;
+        border-color: rgba(8, 151, 156, 0.25);
+        background: rgba(8, 151, 156, 0.08);
+      }
+
+      .pagination-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+        padding-top: 12px;
+        border-top: 1px solid var(--twtc-color-border);
+        font-size: 13px;
+        color: var(--twtc-color-text-tertiary);
+      }
+
+      .pagination-bar .btns {
+        display: flex;
+        gap: 8px;
+      }
+
+      .empty-hint {
+        padding: 32px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      /* Detail */
+      .detail-card {
+        margin: 0 16px 24px;
+        padding: 16px;
+        background: var(--twtc-color-bg-container);
+        border-radius: var(--twtc-radius-md);
+        box-shadow: var(--twtc-shadow-card);
+        border: 1px solid var(--twtc-color-border);
+      }
+
+      .detail-toolbar {
+        margin-bottom: 12px;
+      }
+
+      .detail-body {
+        display: grid;
+        grid-template-columns: minmax(280px, 400px) 1fr;
+        gap: 16px;
+        align-items: start;
+      }
+
+      @media (max-width: 960px) {
+        .shell {
+          grid-template-columns: 1fr;
+        }
+        .sider {
+          display: none;
+        }
+        .detail-body {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .panel {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: #fff;
+        overflow: hidden;
+      }
+
+      .collapse-hd {
+        padding: 12px;
+        font-weight: 700;
+        background: #fafafa;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .collapse-bd {
+        padding: 12px;
+      }
+
+      .desc-row {
+        display: grid;
+        grid-template-columns: 110px 1fr;
+        gap: 8px;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 13px;
+      }
+
+      .desc-row:last-child {
+        border-bottom: none;
+      }
+
+      .desc-label {
+        color: var(--muted);
+      }
+
+      .mini-table-wrap {
+        overflow-x: auto;
+        max-width: 100%;
+      }
+
+      table.mini {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+
+      table.mini th,
+      table.mini td {
+        padding: 8px;
+        border-bottom: 1px solid #f0f0f0;
+        text-align: left;
+        white-space: nowrap;
+      }
+
+      table.mini th {
+        background: #fafafa;
+        font-weight: 600;
+      }
+
+      .detail-nav-footer {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+      }
+
+      .detail-right {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        background: #fff;
+      }
+
+      .detail-top-tabs {
+        display: flex;
+        gap: 0;
+        border-bottom: 1px solid var(--border);
+        background: #fafafa;
+      }
+
+      .detail-top-tabs button {
+        flex: 1;
+        max-width: 160px;
+        padding: 12px 16px;
+        border: none;
+        background: transparent;
+        font: inherit;
+        font-size: 14px;
+        cursor: pointer;
+        color: var(--muted);
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+      }
+
+      .detail-top-tabs button.is-active {
+        color: var(--primary);
+        font-weight: 600;
+        border-bottom-color: var(--primary);
+        background: #fff;
+      }
+
+      .detail-sub-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--twtc-color-border);
+        background: var(--twtc-color-bg-container);
+      }
+
+      .detail-sub-tabs button {
+        padding: 4px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--twtc-color-border-secondary);
+        background: var(--twtc-color-bg-container);
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+        color: var(--twtc-color-text-secondary);
+        transition:
+          border-color 0.2s ease,
+          color 0.2s ease;
+      }
+
+      .detail-sub-tabs button:hover {
+        border-color: var(--twtc-color-primary);
+        color: var(--twtc-color-primary);
+      }
+
+      .detail-sub-tabs button.is-active {
+        border-color: var(--twtc-color-primary);
+        color: var(--twtc-color-primary);
+        font-weight: 500;
+      }
+
+      .detail-media-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        padding: 12px;
+        background: #000;
+        min-height: 320px;
+      }
+
+      .detail-media-tile {
+        aspect-ratio: 16 / 9;
+        background: linear-gradient(145deg, #1e2433 0%, #12151c 100%);
+        border-radius: var(--twtc-radius-sm);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: grid;
+        place-items: center;
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.42);
+        transition:
+          border-color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .detail-media-tile:hover {
+        border-color: rgba(238, 77, 45, 0.45);
+        box-shadow: 0 0 0 1px rgba(238, 77, 45, 0.2);
+      }
+
+      .detail-media-tile .ph {
+        letter-spacing: 0.02em;
+      }
+
+      .detail-media-tile video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 6px;
+      }
+
+      .note-actions {
+        margin-top: 10px;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      /* Modal */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 1000;
+        display: grid;
+        place-items: center;
+        padding: 16px;
+        animation: modal-backdrop-in 0.2s ease;
+      }
+
+      @keyframes modal-backdrop-in {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes modal-panel-in {
+        from {
+          opacity: 0;
+          transform: scale(0.98) translateY(-6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      .modal {
+        background: var(--twtc-color-bg-container);
+        border-radius: var(--twtc-radius-md);
+        max-width: 400px;
+        width: 100%;
+        padding: 20px 22px;
+        box-shadow:
+          0 6px 16px rgba(0, 0, 0, 0.12),
+          0 3px 6px rgba(0, 0, 0, 0.08);
+        border: 1px solid var(--twtc-color-border);
+        animation: modal-panel-in 0.22s ease;
+      }
+
+      .modal h3 {
+        margin: 0 0 16px;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--twtc-color-text);
+      }
+
+      .modal .err {
+        color: var(--twtc-color-error);
+        font-size: 12px;
+        margin-top: 6px;
+      }
+
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <p class="file-warn standalone-banner" id="standalone-note">
+      資料與 <strong>Ant Design reset</strong>（<code>antd@6.3.5/dist/reset.css</code>）已內嵌於本檔，無需伺服器或
+      CDN；可直接以瀏覽器開啟（含 <code>file://</code>）。九宮格為離線示意，不含外部影片檔。
+    </p>
+
+    <header class="topbar">
+      <div class="header-left">
+        <span class="logo-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+            <path d="M4 6h16v2H4V6zm0 4h10v10H4V10zm12 0h8v10h-8V10z" />
+          </svg>
+        </span>
+        <span class="logo-text">Tech Platform</span>
+      </div>
+      <div class="header-right">
+        <button type="button" class="user-trigger">
+          <span class="avatar">VY</span>
+          <span>Vera Yang</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="shell">
+      <aside class="sider">
+        <div class="nav-item"><span class="nav-ico">⌂</span> 首頁</div>
+        <div class="nav-item is-active"><span class="nav-ico">▤</span> SPX 案件排查中心</div>
+        <div class="nav-item"><span class="nav-ico">▢</span> 資料夾</div>
+      </aside>
+
+      <main class="main">
+        <div class="breadcrumb-bar" id="breadcrumb"></div>
+
+        <div id="view-list">
+          <div class="page-head" id="page-head">
+            <div class="page-head-main">
+              <h1 class="page-title">SPX 案件排查中心</h1>
+              <p class="page-desc" id="page-desc"></p>
+            </div>
+            <div class="page-head-toolbar hidden" id="live-toolbar">
+              <button type="button" class="btn primary" id="btn-live-create">新增查詢</button>
+            </div>
+          </div>
+
+          <div class="content-inner">
+            <div class="tabs" role="tablist">
+              <button type="button" class="tab is-active" data-tab="package">包裹案件</button>
+              <button type="button" class="tab" data-tab="kiosk">繳費機案件</button>
+              <button type="button" class="tab" data-tab="live">即時查詢</button>
+            </div>
+
+            <div class="card">
+              <div id="filter-package" class="filter-bar">
+                <div class="filter-grid">
+                  <div class="field">
+                    <label for="pf-case">案件編號</label>
+                    <input id="pf-case" type="text" placeholder="請輸入案件編號..." />
+                  </div>
+                  <div class="field">
+                    <label for="pf-track">包裹配送編號</label>
+                    <input id="pf-track" type="text" placeholder="請輸入包裹配送編號..." />
+                  </div>
+                  <div class="field">
+                    <label for="pf-date-from">日期（起）</label>
+                    <input id="pf-date-from" type="date" />
+                  </div>
+                  <div class="field">
+                    <label for="pf-date-to">日期（迄）</label>
+                    <input id="pf-date-to" type="date" />
+                  </div>
+                  <div class="filter-actions">
+                    <button type="button" class="btn primary" id="pf-submit">搜尋</button>
+                    <button type="button" class="btn" id="pf-reset">重置</button>
+                  </div>
+                </div>
+              </div>
+
+              <div id="filter-kiosk" class="filter-bar hidden">
+                <div class="filter-grid">
+                  <div class="field">
+                    <label for="kf-store">門市編號/名稱</label>
+                    <input id="kf-store" type="text" placeholder="請輸入門市編號或門市名稱..." />
+                  </div>
+                  <div class="field">
+                    <label for="kf-task">任務編號</label>
+                    <input id="kf-task" type="text" placeholder="請輸入任務編號..." />
+                  </div>
+                  <div class="field">
+                    <label for="kf-vendor">廠商</label>
+                    <select id="kf-vendor">
+                      <option value="">請選擇廠商...</option>
+                      <option value="libao">立保 (繳費機)</option>
+                      <option value="bochen">博辰 (繳費機)</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="kf-abnormal">異常狀況</label>
+                    <select id="kf-abnormal">
+                      <option value="">請選擇異常狀況...</option>
+                      <option value="1004">1004 - 卡幣</option>
+                      <option value="short">少找錢</option>
+                      <option value="state">設備狀態錯誤</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="kf-date-from">日期（起）</label>
+                    <input id="kf-date-from" type="date" />
+                  </div>
+                  <div class="field">
+                    <label for="kf-date-to">日期（迄）</label>
+                    <input id="kf-date-to" type="date" />
+                  </div>
+                  <div class="filter-actions">
+                    <button type="button" class="btn primary" id="kf-submit">搜尋</button>
+                    <button type="button" class="btn" id="kf-reset">重置</button>
+                  </div>
+                </div>
+              </div>
+
+              <div id="filter-live" class="filter-bar hidden">
+                <div class="filter-grid">
+                  <div class="field" style="flex: 2 1 280px">
+                    <label for="lf-tracking">包裹配送編號</label>
+                    <textarea
+                      id="lf-tracking"
+                      placeholder="用半形逗號分隔，中間不留空白"
+                      rows="2"
+                    ></textarea>
+                  </div>
+                  <div class="field">
+                    <label for="lf-date-from">日期（起）</label>
+                    <input id="lf-date-from" type="date" />
+                  </div>
+                  <div class="field">
+                    <label for="lf-date-to">日期（迄）</label>
+                    <input id="lf-date-to" type="date" />
+                  </div>
+                  <div class="filter-actions">
+                    <button type="button" class="btn primary" id="lf-submit">搜尋</button>
+                    <button type="button" class="btn" id="lf-reset">重置</button>
+                  </div>
+                </div>
+              </div>
+
+              <div id="table-empty" class="empty-hint hidden"></div>
+              <div class="table-wrap">
+                <table class="data case-table case-table--subtle">
+                  <thead id="table-head"></thead>
+                  <tbody id="table-body"></tbody>
+                </table>
+              </div>
+              <div class="pagination-bar">
+                <span id="page-info">第 0–0 筆，共 0 筆</span>
+                <div class="btns">
+                  <button type="button" class="btn" id="page-prev" disabled>上一頁</button>
+                  <button type="button" class="btn" id="page-next" disabled>下一頁</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="view-detail" class="hidden">
+          <div class="detail-card">
+            <div class="detail-toolbar">
+              <button type="button" class="btn" id="btn-back">返回</button>
+            </div>
+            <div class="detail-body">
+              <div id="detail-left"></div>
+              <div class="detail-right" id="detail-right">
+                <div class="detail-top-tabs" id="detail-top-tabs"></div>
+                <div id="detail-sub-tabs-wrap"></div>
+                <div class="detail-media-grid" id="detail-grid"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div class="modal-backdrop hidden" id="modal-live" role="dialog" aria-modal="true">
+      <div class="modal">
+        <h3>新增查詢</h3>
+        <div class="field">
+          <label for="modal-tracking">包裹配送編號</label>
+          <input id="modal-tracking" type="text" placeholder="請輸入包裹配送編號..." />
+        </div>
+        <div class="err hidden" id="modal-dup-err"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn" id="modal-cancel">取消</button>
+          <button type="button" class="btn primary" id="modal-ok">新增</button>
+        </div>
+      </div>
+    </div>
+
+<script type="text/plain" id="csv-package">
+案件編號,包裹配送編號,案件摘要,案件說明,案件描述,用戶類型,退貨物流編號,備註,影片處理狀況,案件建立時間
+202887290736873,TW267228759905R,Invoice Related Issues,,用戶為買家，針對訂單 26023KG8K0KV8 詢問為何會收到「退款商品折讓證明聯」，並想了解該文件的用途與含義。,Buyer,260303073T55NN,,準備中,2026-03-04 0:39:03
+202902482754236423,TW264028353302,,,,Buyer,,,準備中,2026-03-04 0:29:53
+202698062979660857,TW26549085S,,,,Buyer,,,準備中,2026-02-26 9:20:06
+202840369672977376,TW26549085S,,,用戶透過網路電話來電，但未說明任何訂單或問題細節。目前僅能記錄為一般諮詢，待用戶補充資訊後再進一步協助。,Buyer,,,下載中,2026-03-02 7:35:00
+20282787854838857,TW26904357648F,Issues on cash collection machine,,,Buyer,,,下載中,2026-03-02 9:06:00
+20269307788538655,TW266380563357Z,Return/refund was cancelled as buyer did not ship on time,,用戶反映訂單 26030GPX83DR8 已於 2/5 在退貨期限內完成退貨，但系統後來卻顯示未於時間內退貨且訂單已完成，導致商品已退回卻仍被扣款。用戶表示年前多次留言無回覆，請求協助查明原因並說明處理方式。,Buyer,26030GPX83DR8,,下載中,2026-02-26 5:59:47
+20297839728449336,TW26867259759L,,,,Buyer,,,下載中,2026-03-06 2:59:32
+202937355929669224,TW2686258835C,Check on return parcel status,,User requested assistance with checking the return/refund progress for order SN 26026U6U4NN7P. They asked to be connected to a live agent and confirmed they want to know the current status of the refund.,Buyer,260300N54VKC,,下載中,2026-03-05 9:48:55
+202644683209968444,TW26084638094X,,,,Buyer,,,下載中,2026-02-25 7:59:09
+2027946780880495,TW260032854034,Seller Serviceable area enquiries,,用戶詢問今日（2026-02-27）桃園新屋區直營門市是否營業，因擔心228連假門市暫停營業而影響退貨。客服查無暫停營業公告，但用戶仍希望確認是否可於當天前往辦理退貨。,Buyer,2602209UY8YEK,,下載中,2026-02-27 9:08:03
+202884029668468753,TW26559697363,,,用戶於 2026-03-03 22:7:22 透過網路電話來電，但未說明任何具體問題或訂單資訊。目前僅能記錄為一般諮詢，待後續補充細節。,Buyer,,,下載中,2026-03-03 22:29:05
+202883496963382825,TW26559697363,Disconnected / Drop Call,,,Buyer,,,下載中,2026-03-03 22:08:45
+2028662953027555359,TW25040433463H,Raise a RRAOC,,賣家要求為訂單 25226BDGFSXGA 申請紅包單項退款，因買家不需使用該紅包。對話中未提供商品或額外訂單資訊，僅請求協助處理紅包退款。,Seller,,,下載中,2026-03-03 0:45:03
+2026839668773597206,TW268029893304P,Raise a RRAOC,,還要追260222CB6H0XAT,Seller,,,下載中,2026-02-26 0:00:08
+202866499383460660,TW26644040294,Raise a RRAOC,,,Seller,,,下載中,2026-03-03 0:53:09
+202945298306756666,查無資料,Raise a RRAOC,,,Seller,,,下載中,2026-03-05 4:57:49
+202979955452497683,TW262069844855I,Expedite delivery,,用戶反映訂單 26030373JVFWDQ 的訂單動態長期未更新，詢問未更新的原因。客服表示需更多時間確認並請用戶稍候。,Seller,,,已完成,2026-03-06 4:00:40
+2025863822342737920,TW260498939035O,,,,Buyer,,,已完成,2026-02-23 7:22:28
+20269279650205770,TW266040696360,,,,Buyer,,,已完成,2026-02-26 5:26:28
+202922573923592840,TW268275630202C,Return/refund was cancelled as buyer did not ship on time,,我明明就已經寄出退貨，卻一直說我未在期限內寄出,Buyer,2602230EV6FYXXJ,,已完成,2026-03-05 0:00:32
+202835222495879208,查無資料,Request to cancel order,,,Buyer,,,已完成,2026-03-02 :43:28
+202837556049247758,TW26558430905J,,,,Seller,,,已完成,2026-03-02 5:43:03
+2025968377657794652,TW2655085447V,Return/refund after full Shopee Guarantee period,,請問我要退貨，要跟賣家要退貨方式，賣家要求我要先把評價改4-5星才要給我退貨方式，請問我可以拒絕改評價嗎？若我拒絕改評價賣家不給我退貨方式我可以怎麼做？,Buyer,260207042VTXBKA,,已完成,2026-02-24 0:07:56
+202623340055946294,TW2677692304D,Invoice Related Issues,,,Buyer,,,下載失敗,2026-02-24 7:05:05
+2029047945956478,查無資料,Shipping performance / LSR (Late shipment Rate) enquiry,,用戶於2026-03-04 :52:2 透過網路電話來電，但未說明任何訂單編號或具體問題。目前僅能記錄為一般諮詢，待後續補充資訊再進一步協助。,Seller,,,已完成,2026-03-04 2:05:00
+2029732379399892995,查無資料,Auto cancel warning received,,用戶於 2026-03-06 09:04:42 透過網路電話來電，但未說明任何問題或提供訂單編號。目前無法判定其需求或主要訴求。,Seller,,,已完成,2026-03-06 9:34:44
+20294932402799573,TW262630059345C,Expedite delivery,,User asked for delivery details and which logistics provider is used for order 260228UNF90VK9. They then requested to contact customer service and selected 'expedite delivery' for this order.,Buyer,,,已完成,2026-03-05 7:44:00
+202663243396802,TW267895407046,,,,Buyer,,,已完成,2026-02-25 20:05:23
+202950273894098932,TW26730596977,Raise a RRAOC,,請問此流程能順利完成退款嗎？,Buyer,,,已完成,2026-03-05 8:22:03
+2028036666094284823,TW26950074743F,,,,Buyer,,,已完成,2026-03-0 7:6:34
+20294807840990437,TW26823664652H,,,,Buyer,,,已完成,2026-03-05 6:56:09
+202552223933493263,TW266244225875Z,,,,Buyer,,,已完成,2026-02-22 8:05:02
+2027057725353798,TW2689569664F,,,,Buyer,,,已完成,2026-02-27 0:24:25
+202653355438846007,TW263023476349N,Raise a RRAOC,,買家針對訂單 26025THGR3V（Order ID 223036324270204）反映乳液有顆粒感，與正品感受不同，疑似仿品，要求申請退貨退款。客服已轉交處理單位，並請買家補充商品瑕疵照片與相關資訊。,Buyer,,,已完成,2026-02-25 2:23:29
+2026632798927478,TW26835890009O,Raise a RRAOC,,賣家就訂單 2603FQ0TS9WR（Order ID 2235402022986）請求退貨退款，因商品無法下水清洗且已過鑑賞期。賣家表示需回收商品並走系統逆物流，希望後台協助發起RRAOC。,Seller,,,已完成,2026-02-24 3:02:24
+20284378036232538,TW264457066826D,,,,Buyer,,,已完成,2026-03-02 9:50:33
+202663269874542663,TW26227824297O,Status is delivered but not yet received,,買家帳號：carrow25 賣家帳號：applemotogp 訂單編號：260282SXSBU4A 寄件編號：TW26227824297O 前往的收件門市：新竹金山店 新竹市東區新竹市東區金山北一街6號樓 取件人大名：郭亞婷 收件人手機號碼：886988630707 取件日期與時間：  用戶反應門市取不到件，懇請協助確認商品是否在店，謝謝。 有留電話給店員並告知上班無法接電話請用簡訊通知但兩天還沒收到簡訊，看google map顯示是總公司電話故無法與門市聯繫，還請幫忙查詢，十分感謝！,Buyer,,,已完成,2026-02-25 20:05:36
+20293996620250080,查無資料,Status is delivered but not yet received,,2026-03-05 用戶透過網路來電反映訂單少發一箱濕紙巾，並已指引買家申請退款。請協助記錄與後續處理。,Buyer,,,已完成,2026-03-05 :32:38
+202907396067373057,TW260426470279V,,,,Buyer,,,已完成,2026-03-04 3:58:25
+20270025803893049,TW26566253320T,,,,Buyer,,,已完成,2026-02-26 20:47:04
+202698848604993059,TW26566253320T,,,,Buyer,,,已完成,2026-02-26 9:05:28
+202543520787707463,查無資料,Request to extend self-collection duration,,用戶為賣家，透過人工客服諮詢蝦皮店到店寄件/配送相關問題，並提供訂單編號 26022GTEWXBR0（Order ID 2245787426736）。目前僅提出一般詢問，未說明具體問題細節或請求，待客戶補充更多資訊以利後續協助。,Buyer,,,已完成,2026-02-22 2:59:07
+202835575357468748,TW2674975068K,,,,Buyer,,,已完成,2026-03-02 4:07:55
+202583404423022607,TW26770880859,Raise a RRAOC,,,Buyer,,,已完成,2026-02-23 5:24:09
+2027584306283794478,TW2633688454Z,,,,Buyer,,,已完成,2026-02-28 :9:04
+20278796337954895,TW26792770455L,,,,Buyer,,,已完成,2026-02-27 9:04:08
+20278845785820249,TW26792770455L,No Message Sent By User,,,Buyer,,,已完成,2026-02-27 9:05:56
+20294477756326540,TW266464666938L,,,,Buyer,,,已完成,2026-03-05 4:43:49
+2025853725343983,TW263028269054,Payment method cannot be used,,,Buyer,,,已完成,2026-02-23 6:33:00
+2025848559583600709,,Status is delivered but not yet received,,,Buyer,,,已完成,2026-02-23 6:02:49
+202957577968078876,TW26084354638J,,,,Buyer,,,已完成,2026-03-04 9:30:04
+202733286985368095,TW26003864227T,,,,Seller,,,已完成,2026-02-27 8:39:56
+20279955746574768,TW2626790743,Picked up but status not updated,,Seller reports that order 260223G46KVMA was shipped from a store but appears canceled and no return parcel has been sent back. They are asking why the order is marked as not established and seeking clarification.,Seller,,,已完成,2026-02-27 9:50:02
+202908564807872050,TW262465827557O,Feedback on Sellers,,用戶於2026-03-04 4:44:5 透過網路來電聯繫客服，但未提供具體問題或訂單資訊。目前僅能記錄為一般諮詢，待用戶補充細節後再進一步處理。,Buyer,,,已完成,2026-03-04 4:44:05
+202867205667320223,TW26772698864I,Enquiries on late delivery compensation,,用戶反映訂單 26030WS330Q7 的 30 元延遲補償券自凌晨起一直無法領取，系統顯示「請稍後再試」。用戶已更新至最新版本且換機測試仍無法領取，請求協助查明原因並完成補償券領取。,Buyer,,,已完成,2026-03-03 :2:23
+20294906587580277,TW264098232706T,,,,Buyer,,,已完成,2026-03-05 7:34:03
+2026983632273559603,TW26223388727O,,,,Buyer,,,已完成,2026-02-26 9:32:02
+2029559954456038,TW2664072998569,,,,Buyer,,,已完成,2026-03-05 22:06:34
+2029473756468674633,TW265733427307Q,Feedback on Sellers,,用戶於2026-03-05 6:27 透過網路電話來電，但未說明任何問題或提供訂單編號。目前僅能記錄為一般諮詢，待用戶補充細節後再進一步協助。,Buyer,,,已完成,2026-03-05 6:27:04
+2028507236250693677,TW269896999638,Expedite delivery,,賣家說已從店到店出貨，也有掃碼，但我的畫面一直是「賣家將於確認訂單後出貨」，上面有寫賣家最晚須於3/3出貨，這樣會被取消訂單嗎？,Buyer,,,已完成,2026-03-03 0:26:27
+20287893395465503,TW262868299628E,Disconnected / Drop Call,,,Buyer,,,已完成,2026-03-03 9:07:20
+20255468693600076,TW26943982062,,,,Buyer,,,已完成,2026-02-22 20:22:59
+202877026704393865,TW2665556085J,Status is delivered but not yet received,,"Buyer reports not receiving the parcel from a smart locker, stating the locker door closed without retrieval. They contacted support regarding a Shopee Store-to-Store shipment/delivery issue and provided order SN 260225NBG3GDKW.",Buyer,,,已完成,2026-03-03 7:05:39
+202580205402854956,查無資料,Issues on cash collection machine,,,Buyer,,,已完成,2026-02-23 3:07:00
+2026605565284487238,TW2686065548T,How to change refund amount,,買家反映訂單 2602072TSEV4TV 中有兩件商品皆有破損，其中一件已申請退貨退款，另一件卻被系統自動標記為「已確認收貨」，導致無法再申請退貨。客服建議先取消現有退貨退款申請，再重新提交包含兩件商品的退貨退款。,Buyer,2602250MMJ7B5GX,,已完成,2026-02-25 8:29:53
+2026239760904388,TW266399898858T,,,,Buyer,,,已完成,2026-02-24 7:45:22
+202970585757470380,TW263055946209D,Status is delivered but not yet received,,取貨當天領取較多包裹，沒點包裹數量就回家了。晚上拆包裹才發現少一個包裹，因為是小包裹不知道會漏拿了嗎？再回蝦皮店重按電話就沒有可取商品了。可以請該蝦皮店人員再看看包裹在蝦皮店嗎,Buyer,,,已完成,2026-03-06 7:49:02
+2028439730904735,TW262425832438K,,,,Buyer,,,已完成,2026-03-02 9:27:23
+2029435348872949828,TW264770202234X,Check RTS status,,用戶於 2026-03-05 3:54:26 透過網路來電聯繫客服，但未說明任何問題或需求。目前僅能記錄為一般來電，待後續補充資訊。,Seller,,,已完成,2026-03-05 3:54:26
+2029355824298790926,TW26398037924K,,,,Buyer,260303069020GKG,,已完成,2026-03-05 8:38:26
+20290926275699203,TW26635958268X,Expedite delivery,,用戶透過網路電話來電，但未說明任何具體問題或需求。目前僅能記錄為一般諮詢，待用戶補充細節後再進一步處理。,Buyer,,,已完成,2026-03-04 6:08:04
+202979878049477056,TW262594320909S,,,,Buyer,,,已完成,2026-03-06 3:58:35
+2029735227900873,TW2670702400598,Disconnected / Drop Call,,,Buyer,,,已完成,2026-03-06 9:46:03
+202920967748730905,TW263040375827,,,,Buyer,,,已完成,2026-03-04 22:57:04
+202874006070684469,TW2629400625J,Enquiry about pickup / drop off / collection,,用戶透過網路電話聯繫客服，但未說明任何具體問題或需求。目前僅能記錄為一般諮詢，待後續補充資訊。,Seller,,,已完成,2026-03-03 5:05:37
+202473603734225792,TW260869502364Q,Return/refund was cancelled as buyer did not ship on time,,,Buyer,260240V6GBPMJM,,已完成,2026-02-20 4:04:03
+20273252678354304,TW260869502364Q,Return/refund was cancelled as buyer did not ship on time,,"Buyer reports a self-paid return for order 26008GYF2X03A (Order ID 2258354820720) submitted via Help Center on 2/2. They were told returns would ship on 2/27, but now the Help Center shows no active return and they cannot find the order there.",Buyer,260240V6GBPMJM,,已完成,2026-02-27 7:54:52
+202900944998764373,TW260869502364Q,Parcel was returned without proper notification,,用戶反映於2026年2月2日在蝦皮自助服務中心申請自費貨物運回服務，至今仍未收到包裹。其提供訂單編號 26008GYF2X03A（Order ID: 2258354820720），金額 93，並表示尚未取得進一步資訊，希望客服協助查詢目前運回進度與處理時程。,Buyer,260240V6GBPMJM,,已完成,2026-03-04 9:42:04
+20288058526002769,TW26789897743M,,,,Buyer,,,已完成,2026-03-03 20:00:24
+2028656892964982836,TW26735429220P,Check RTS status,,賣家反映訂單 2603FAJWBY03 的退貨商品逾期未取，希望了解如何取回該商品。客服已要求補充收件人與聯絡資訊，並將案件轉交相關單位處理。,Seller,260200BP93M994,,已完成,2026-03-03 0:02:08
+20264570525326333,TW257424555I,Voucher not refunded,,買家反映訂單 250902CV3E8M4（Order ID 2044249725760）因賣家未出貨導致訂單不成立，並要求補發原訂單使用的折扣券 KR8VII02。客服已建立案件編號 20264570525326333，職代與內部團隊確認補發，並由 CS 回覆補碼申請表。,Buyer,,,已完成,2026-02-24 2:02:34
+2029506554647752736,TW26727443660,Expedite delivery,,.寄件日+時間：0305 9:2  2.寄件門市：蝦皮店到店 安南安中二 - 智取店  3.寄件人特徵：50幾歲女生   5.狀況簡述 (店員說放著就好/其他狀況)： 請家人寄件但我帳戶系統依舊顯示待出貨,Seller,,,已完成,2026-03-05 8:37:23
+20250923098403465,TW26743427530S,,,,Buyer,,,已完成,2026-02-02 4:06:45
+20262262842285263,TW26743427530S,Status is delivered but not yet received,,,Buyer,2602240GPAESXVH,,已完成,2026-02-24 0:30:52
+202947593859539037,TW262625573263J,Order is shipped but cancelled in system,,用戶於2026-03-05 6:8:28 透過網路電話來電，但未說明任何具體問題或訂單資訊。目前僅能記錄為一般諮詢，待用戶補充細節後再進一步處理。,Buyer,,,已完成,2026-03-05 6:08:28
+202709709898503492,TW26443884540Q,,,,Buyer,,,已完成,2026-02-27 3:03:04
+20298896493448,TW268665224955O,Check on KYC status,,用戶透過網路電話來電，但未說明任何具體問題或提供訂單編號。目前僅能記錄為一般諮詢，待用戶補充細節後再進一步處理。,Buyer,,,已完成,2026-03-04 6:56:58
+202926957643355,TW263529806493P,,,,Buyer,,,已完成,2026-03-04 7:29:00
+2026585905594396754,TW269705063677L,,,,Buyer,,,已完成,2026-02-25 7::46
+202550505682063438,TW26064847250,Status is delivered but not yet received,,用戶反映蝦皮店到店寄件/配送出現問題，表示提供的處理方式完全無法解決，且多次聯繫不到客服。主要訴求是針對訂單 26022FQES525Y 的配送相關問題尋求協助與改善。,Buyer,,,已完成,2026-02-22 7:58:03
+2028403503800483923,TW266340694433O,Other RTS issues,,用戶詢問如何查看退貨配送進度，並提供訂單編號 260299F6P48（Order ID 22332556820864）。客服已確認需求並請用戶補充收件資訊以安排退回包裹。,Seller,,,已完成,2026-03-02 7:34:05
+2027357466660296,TW266340694433O,No Message Sent By User,,,Seller,,,已完成,2026-02-27 7:03:54
+202732267749753654,TW266340694433O,No Message Sent By User,,,Seller,,,已完成,2026-02-27 7:59:26
+202728448062936270,TW26673927W,Parcel was returned without proper notification,,用戶詢問訂單目前的配送狀態與預計到貨時間，希望了解包裹是否仍在運輸途中。未提供具體訂單編號或物流追蹤資訊，僅請求確認配送進度。,Seller,,,已完成,2026-02-27 5:27:39
+202723982838350550,TW26790885485N,,,,Buyer,,,已完成,2026-02-27 2:30:04</script>
+<script type="text/plain" id="csv-package-detail">
+包裹配送編號,標籤,配送編號/商品條碼,訂單狀態,付款方法,交易金額,櫃位編號,櫃位狀態,SKU名稱,到店時間,離店時間,包裹取件時間
+TW266676367349T,57066345524643,453677053498,已取件,現金,120,A-13,關閉,蝦小編衛生紙*8,2026-03-02 18:38:20,2026-03-02 18:37:01,2026-03-02 18:37:01
+TW266748107349R,42114719143824,457427726739,已取件,信用卡/金融卡,240,D-11,開啟,24入阿薩姆奶茶*1,2026-03-02 18:07:28,2026-03-02 18:37:01,
+TW1204008367349T,35962496622238,442791592118,已取件,信用卡/金融卡,80,B-26,關閉,2入康寶玉米濃湯*4,2026-03-02 18:17:01,2026-03-02 18:37:01,2026-03-02 18:37:01
+TW1927890391234T,29016312256416,470530688984,待取件,信用卡/金融卡,142,A-27,關閉,1000ml熊寶貝洗衣精*1,2026-03-02 19:28:01,2026-03-02 18:37:01,2026-03-02 18:37:01</script>
+<script type="text/plain" id="csv-kiosk">
+任務編號,門市編號,門市名稱,設備類型,廠商,異常狀況,任務狀態,門市系統備註,後台備註,影片處理狀況,異常發生時間,更新時間
+202887290736873,1027,新北市大安區店,繳費機,立保(繳費機),1004 - 卡幣 - 上幣道卡幣 (2602000673709946) (TW260610320333T),異常,,,下載中,2026-03-04 0:39:03,2026-03-04 0:39:03
+202902482754236423,186,桃園市中山區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,下載中,2026-03-04 0:29:53,2026-03-04 0:29:53
+202698062979660857,2591,台中市板橋區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,下載中,2026-02-26 9:20:06,2026-02-26 9:20:06
+202840369672977376,1160,台南市新莊區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,下載中,2026-03-02 7:35:00,2026-03-02 7:35:00
+20282787854838857,1862,高雄市中壢區店,繳費機,博辰(繳費機),少找錢,異常,,,下載中,2026-03-02 9:06:00,2026-03-02 9:06:00
+20269307788538655,2012,台北市東區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,下載中,2026-02-26 5:59:47,2026-02-26 5:59:47
+20297839728449336,753,新北市西屯區店,繳費機,立保(繳費機),少找錢,異常,,,下載中,2026-03-06 2:59:32,2026-03-06 2:59:32
+202937355929669224,1120,桃園市北區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,下載中,2026-03-05 9:48:55,2026-03-05 9:48:55
+202644683209968444,677,台中市左營區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,下載中,2026-02-25 7:59:09,2026-02-25 7:59:09
+2027946780880495,1246,台南市信義區店,繳費機,立保(繳費機),少找錢,異常,,,下載中,2026-02-27 9:08:03,2026-02-27 9:08:03
+202884029668468753,2195,高雄市大安區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,下載中,2026-03-03 22:29:05,2026-03-03 22:29:05
+202883496963382825,348,台北市中山區店,繳費機,博辰(繳費機),1004 - 卡幣 - 上幣道卡幣 (2602000673709946) (TW260610320333T),異常,,,下載中,2026-03-03 22:08:45,2026-03-03 22:08:45
+2028662953027555359,185,新北市板橋區店,繳費機,立保(繳費機),1004 - 卡幣 - 上幣道卡幣 (2602000673709946) (TW260610320333T),異常,,,下載中,2026-03-03 0:45:03,2026-03-03 0:45:03
+2026839668773597206,1349,桃園市新莊區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,下載中,2026-02-26 0:00:08,2026-02-26 0:00:08
+202866499383460660,1380,台中市中壢區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,下載中,2026-03-03 0:53:09,2026-03-03 0:53:09
+202945298306756666,616,台南市東區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,下載中,2026-03-05 4:57:49,2026-03-05 4:57:49
+202979955452497683,1700,高雄市西屯區店,繳費機,立保(繳費機),少找錢,異常,,,下載中,2026-03-06 4:00:40,2026-03-06 4:00:40
+2025863822342737920,2849,台北市北區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-02-23 7:22:28,2026-02-23 7:22:28
+20269279650205770,1502,新北市左營區店,繳費機,博辰(繳費機),少找錢,異常,,,已完成,2026-02-26 5:26:28,2026-02-26 5:26:28
+202922573923592840,2518,桃園市信義區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-05 0:00:32,2026-03-05 0:00:32
+202835222495879208,2772,台中市大安區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-02 :43:28,2026-03-02 :43:28
+202837556049247758,2826,台南市中山區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-03-02 5:43:03,2026-03-02 5:43:03
+2025968377657794652,2682,高雄市板橋區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-02-24 0:07:56,2026-02-24 0:07:56
+202623340055946294,1177,台北市新莊區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-24 7:05:05,2026-02-24 7:05:05
+2029047945956478,2508,新北市中壢區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-04 2:05:00,2026-03-04 2:05:00
+2029732379399892995,1558,桃園市東區店,繳費機,立保(繳費機),1004 - 卡幣 - 上幣道卡幣 (2602000673709946) (TW260610320333T),異常,,,已完成,2026-03-06 9:34:44,2026-03-06 9:34:44
+20294932402799573,2828,台中市西屯區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-05 7:44:00,2026-03-05 7:44:00
+202663243396802,1471,台南市北區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-25 20:05:23,2026-02-25 20:05:23
+202950273894098932,2338,高雄市左營區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-05 8:22:03,2026-03-05 8:22:03
+2028036666094284823,1571,台北市信義區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-03-0 7:6:34,2026-03-0 7:6:34
+20294807840990437,2729,新北市大安區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-05 6:56:09,2026-03-05 6:56:09
+202552223933493263,2138,桃園市中山區店,繳費機,博辰(繳費機),少找錢,異常,,,已完成,2026-02-22 8:05:02,2026-02-22 8:05:02
+2027057725353798,424,台中市板橋區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-27 0:24:25,2026-02-27 0:24:25
+202653355438846007,2561,台南市新莊區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-25 2:23:29,2026-02-25 2:23:29
+2026632798927478,811,高雄市中壢區店,繳費機,博辰(繳費機),少找錢,異常,,,已完成,2026-02-24 3:02:24,2026-02-24 3:02:24
+20284378036232538,2086,台北市東區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-02 9:50:33,2026-03-02 9:50:33
+202663269874542663,827,新北市西屯區店,繳費機,博辰(繳費機),1004 - 卡幣 - 上幣道卡幣 (2602000673709946) (TW260610320333T),異常,,,已完成,2026-02-25 20:05:36,2026-02-25 20:05:36
+20293996620250080,2995,桃園市北區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-05 :32:38,2026-03-05 :32:38
+202907396067373057,739,台中市左營區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-04 3:58:25,2026-03-04 3:58:25
+20270025803893049,2773,台南市信義區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-02-26 20:47:04,2026-02-26 20:47:04
+202698848604993059,922,高雄市大安區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-02-26 9:05:28,2026-02-26 9:05:28
+202543520787707463,791,台北市中山區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-02-22 2:59:07,2026-02-22 2:59:07
+202835575357468748,1778,新北市板橋區店,繳費機,立保(繳費機),1004 - 卡幣 - 上幣道卡幣 (2602000673709946) (TW260610320333T),異常,,,已完成,2026-03-02 4:07:55,2026-03-02 4:07:55
+202583404423022607,2895,桃園市新莊區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-23 5:24:09,2026-02-23 5:24:09
+2027584306283794478,1418,台中市中壢區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-28 :9:04,2026-02-28 :9:04
+20278796337954895,1304,台南市東區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-02-27 9:04:08,2026-02-27 9:04:08
+20278845785820249,1556,高雄市西屯區店,繳費機,博辰(繳費機),少找錢,異常,,,已完成,2026-02-27 9:05:56,2026-02-27 9:05:56
+20294477756326540,640,台北市北區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-05 4:43:49,2026-03-05 4:43:49
+2025853725343983,2634,新北市左營區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-02-23 6:33:00,2026-02-23 6:33:00
+2025848559583600709,848,桃園市信義區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-23 6:02:49,2026-02-23 6:02:49
+202957577968078876,547,台中市大安區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-04 9:30:04,2026-03-04 9:30:04
+202733286985368095,1559,台南市中山區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-02-27 8:39:56,2026-02-27 8:39:56
+20279955746574768,2496,高雄市板橋區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-02-27 9:50:02,2026-02-27 9:50:02
+202908564807872050,1276,台北市新莊區店,繳費機,博辰(繳費機),少找錢,異常,,,已完成,2026-03-04 4:44:05,2026-03-04 4:44:05
+202867205667320223,1219,新北市中壢區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-03 :2:23,2026-03-03 :2:23
+20294906587580277,529,桃園市東區店,繳費機,立保(繳費機),1004 - 卡幣 - 上幣道卡幣 (2602000673709946) (TW260610320333T),異常,,,已完成,2026-03-05 7:34:03,2026-03-05 7:34:03
+2026983632273559603,957,台中市西屯區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-26 9:32:02,2026-02-26 9:32:02
+2029559954456038,1564,台南市北區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-05 22:06:34,2026-03-05 22:06:34
+2029473756468674633,433,高雄市左營區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-05 6:27:04,2026-03-05 6:27:04
+2028507236250693677,2586,台北市信義區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-03-03 0:26:27,2026-03-03 0:26:27
+20287893395465503,2283,新北市大安區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-03 9:07:20,2026-03-03 9:07:20
+20255468693600076,2056,桃園市中山區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-02-22 20:22:59,2026-02-22 20:22:59
+202877026704393865,2264,台中市板橋區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-03 7:05:39,2026-03-03 7:05:39
+202580205402854956,207,台南市新莊區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-23 3:07:00,2026-02-23 3:07:00
+2026605565284487238,2820,高雄市中壢區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-02-25 8:29:53,2026-02-25 8:29:53
+2026239760904388,924,台北市東區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-02-24 7:45:22,2026-02-24 7:45:22
+202970585757470380,931,新北市西屯區店,繳費機,博辰(繳費機),,異常,,,已完成,2026-03-06 7:49:02,2026-03-06 7:49:02
+2028439730904735,1365,桃園市北區店,繳費機,博辰(繳費機),,異常,,,已完成,2026-03-02 9:27:23,2026-03-02 9:27:23
+2029435348872949828,2554,台中市左營區店,繳費機,立保(繳費機),,異常,,,已完成,2026-03-05 3:54:26,2026-03-05 3:54:26
+2029355824298790926,527,台南市信義區店,繳費機,立保(繳費機),,異常,,,已完成,2026-03-05 8:38:26,2026-03-05 8:38:26
+20290926275699203,113,高雄市大安區店,繳費機,立保(繳費機),1004 - 卡幣 - 上幣道卡幣 (2602000673709946) (TW260610320333T),異常,,,已完成,2026-03-04 6:08:04,2026-03-04 6:08:04
+202979878049477056,961,台北市中山區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-06 3:58:35,2026-03-06 3:58:35
+2029735227900873,883,新北市板橋區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-06 9:46:03,2026-03-06 9:46:03
+202920967748730905,2695,桃園市新莊區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-04 22:57:04,2026-03-04 22:57:04
+202874006070684469,1340,台中市中壢區店,繳費機,博辰(繳費機),少找錢,異常,,,已完成,2026-03-03 5:05:37,2026-03-03 5:05:37
+202473603734225792,372,台南市東區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-02-20 4:04:03,2026-02-20 4:04:03
+20273252678354304,612,高雄市西屯區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-02-27 7:54:52,2026-02-27 7:54:52
+202900944998764373,505,台北市北區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-04 9:42:04,2026-03-04 9:42:04
+20288058526002769,2679,新北市左營區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-03 20:00:24,2026-03-03 20:00:24
+2028656892964982836,1614,桃園市信義區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-03-03 0:02:08,2026-03-03 0:02:08
+20264570525326333,284,台中市大安區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-02-24 2:02:34,2026-02-24 2:02:34
+2029506554647752736,948,台南市中山區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-03-05 8:37:23,2026-03-05 8:37:23
+20250923098403465,314,高雄市板橋區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-02-02 4:06:45,2026-02-02 4:06:45
+20262262842285263,133,台北市新莊區店,繳費機,博辰(繳費機),少找錢,異常,,,已完成,2026-02-24 0:30:52,2026-02-24 0:30:52
+202947593859539037,1475,新北市中壢區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-05 6:08:28,2026-03-05 6:08:28
+202709709898503492,2806,桃園市東區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-27 3:03:04,2026-02-27 3:03:04
+20298896493448,2049,台中市西屯區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-03-04 6:56:58,2026-03-04 6:56:58
+202926957643355,1513,台南市北區店,繳費機,立保(繳費機),1004 - 卡幣 - 上幣道卡幣 (2602000673709946) (TW260610320333T),異常,,,已完成,2026-03-04 7:29:00,2026-03-04 7:29:00
+2026585905594396754,2686,高雄市左營區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-25 7::46,2026-02-25 7::46
+202550505682063438,364,台北市信義區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-22 7:58:03,2026-02-22 7:58:03
+2028403503800483923,2094,新北市大安區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-02 7:34:05,2026-03-02 7:34:05
+2027357466660296,1276,桃園市中山區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-02-27 7:03:54,2026-02-27 7:03:54
+202732267749753654,1950,台中市板橋區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-02-27 7:59:26,2026-02-27 7:59:26
+202728448062936270,2948,台南市新莊區店,繳費機,博辰(繳費機),少找錢,異常,,,已完成,2026-02-27 5:27:39,2026-02-27 5:27:39
+202723982838350550,881,高雄市中壢區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-27 2:30:04,2026-02-27 2:30:04
+202945965269320,2681,台北市東區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-05 2:37:25,2026-03-05 2:37:25
+2028325852584353878,222,新北市西屯區店,繳費機,立保(繳費機),1004 - 卡幣 - 上幣道卡幣 (2602000673709946) (TW260610320333T),異常,,,已完成,2026-03-02 2:25:42,2026-03-02 2:25:42
+2029765789940692,1969,桃園市北區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-06 :47:28,2026-03-06 :47:28
+202786839727350,1901,台中市左營區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-27 8:59:40,2026-02-27 8:59:40
+2028078927523249,777,台南市信義區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-0 6:0:58,2026-03-0 6:0:58
+202872062272058586,1015,高雄市大安區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-03-03 4:34:22,2026-03-03 4:34:22
+202839990040645658,28,台北市中山區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-02 2:02:24,2026-03-02 2:02:24
+202839338032632387,1871,新北市板橋區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-03-02 6:54:02,2026-03-02 6:54:02
+20284279630365308,2104,桃園市新莊區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-02 8:46:57,2026-03-02 8:46:57
+20284465459675399,2633,台中市中壢區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-02 8:08:34,2026-03-02 8:08:34
+202646037009257472,1715,台南市東區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-02-25 8:52:56,2026-02-25 8:52:56
+2.0285E+15,1761,高雄市西屯區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-02 23:42:25,2026-03-02 23:42:25
+2028749757273288782,2225,台北市北區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-03-03 6:30:09,2026-03-03 6:30:09
+20287580004676768,1722,新北市左營區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-03 7:02:54,2026-03-03 7:02:54
+20265232875824722,45,桃園市信義區店,繳費機,博辰(繳費機),少找錢,異常,,,已完成,2026-02-25 2:55:00,2026-02-25 2:55:00
+2029039894827674,1422,台中市大安區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-04 0:00:06,2026-03-04 0:00:06
+20296647522066522,1874,台南市中山區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-04 6:48:02,2026-03-04 6:48:02
+20294059509782890,1648,高雄市板橋區店,繳費機,博辰(繳費機),少找錢,異常,,,已完成,2026-03-05 :57:37,2026-03-05 :57:37
+2029484934304444459,2049,台北市新莊區店,繳費機,博辰(繳費機),1004 - 卡幣 - 上幣道卡幣 (2602000673709946) (TW260610320333T),異常,,,已完成,2026-03-05 7::29,2026-03-05 7::29
+20247364582565357,738,新北市中壢區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-20 4:42:44,2026-02-20 4:42:44
+20299278409596983,703,桃園市東區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-04 6:58:29,2026-03-04 6:58:29
+20272058265335864,520,台中市西屯區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-02-27 0:02:33,2026-02-27 0:02:33
+2025303682496282,690,台南市北區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-02-02 6:47:59,2026-02-02 6:47:59
+202506780906060682,2379,高雄市左營區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-02-02 2:39:24,2026-02-02 2:39:24
+20286742926428986,2652,台北市信義區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-03-03 :8:54,2026-03-03 :8:54
+202505294755448746,2434,新北市大安區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-2 :40:2,2026-02-2 :40:2
+2029732750298079275,1377,桃園市中山區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-06 9:36:02,2026-03-06 9:36:02
+202908209493392447,325,台中市板橋區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-03-04 4:30:26,2026-03-04 4:30:26
+2026465990495223902,2631,台南市新莊區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-02-25 9:05:06,2026-02-25 9:05:06
+20266587376482466,2713,高雄市中壢區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-25 22:0:,2026-02-25 22:0:
+2027787969248780324,2393,台北市東區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-0 0:48:2,2026-03-0 0:48:2
+2025029589693042772,1455,新北市西屯區店,繳費機,博辰(繳費機),少找錢,異常,,,已完成,2026-02-02 0:07:32,2026-02-02 0:07:32
+202542362232930,648,桃園市北區店,繳費機,博辰(繳費機),1004 - 卡幣 - 上幣道卡幣 (2602000673709946) (TW260610320333T),異常,,,已完成,2026-02-02 5:32:42,2026-02-02 5:32:42
+202660684344049672,659,台中市左營區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-25 8:34:58,2026-02-25 8:34:58
+202686336343288633,2074,台南市信義區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-26 :34:7,2026-02-26 :34:7
+202840022254643607,496,高雄市大安區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-02 7:02:03,2026-03-02 7:02:03
+2026257342245858,639,台北市中山區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-02-24 9:26:04,2026-02-24 9:26:04
+2026829805596294,1455,新北市板橋區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-02-26 9:08:27,2026-02-26 9:08:27
+2028802674539376728,1143,桃園市新莊區店,繳費機,博辰(繳費機),少找錢,異常,,,已完成,2026-03-03 20:00:25,2026-03-03 20:00:25
+202947786555482204,716,台中市中壢區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-05 2:44:39,2026-03-05 2:44:39
+20246735054638383,115,台南市東區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-20 0:32:34,2026-02-20 0:32:34
+202837976783230684,486,高雄市西屯區店,繳費機,博辰(繳費機),少找錢,異常,,,已完成,2026-03-02 5:59:56,2026-03-02 5:59:56
+202835059407968285,437,台北市北區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-02 4:04:00,2026-03-02 4:04:00
+2025562533598775,1660,新北市左營區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-02-02 8:30:04,2026-02-02 8:30:04
+20262538340745324,1344,桃園市信義區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-02-24 0:04:49,2026-02-24 0:04:49
+202884605482963369,2505,台中市大安區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-03 22:52:48,2026-03-03 22:52:48
+2025524033287802957,376,台南市中山區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-02-22 8:52:06,2026-02-22 8:52:06
+202550309374927368,256,高雄市板橋區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-22 7:29:04,2026-02-22 7:29:04
+2026489894855004207,38,台北市新莊區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-25 0:50:05,2026-02-25 0:50:05
+202647209306225247,1547,新北市中壢區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-02-25 9:39:03,2026-02-25 9:39:03
+2028748092822024,748,桃園市東區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-03 6:23:32,2026-03-03 6:23:32
+202908077482974,1512,台中市西屯區店,繳費機,博辰(繳費機),,異常,,,已完成,2026-03-04 0:06:20,2026-03-04 0:06:20
+20297882798407733,582,台南市北區店,繳費機,立保(繳費機),,異常,,,已完成,2026-03-06 3:06:06,2026-03-06 3:06:06
+2029060589557559384,632,高雄市左營區店,繳費機,立保(繳費機),1004 - 卡幣 - 上幣道卡幣 (2602000673709946) (TW260610320333T),異常,,,已完成,2026-03-04 3:05:07,2026-03-04 3:05:07
+20254928973049738,1929,台北市信義區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-22 6:48:04,2026-02-22 6:48:04
+20265863706968072,1913,新北市大安區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-24 2:53:57,2026-02-24 2:53:57
+2029057005388599390,1512,桃園市中山區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-04 2:05:02,2026-03-04 2:05:02
+2028357479757500457,716,台中市板橋區店,繳費機,博辰(繳費機),少找錢,異常,,,已完成,2026-03-02 4:03:22,2026-03-02 4:03:22
+202933762529742344,331,台南市新莊區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-05 7:26:07,2026-03-05 7:26:07
+202545007028489893,531,高雄市中壢區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-02-22 3:58:22,2026-02-22 3:58:22
+2026849243276064,2473,台北市東區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-24 0:04:26,2026-02-24 0:04:26
+202693709762974087,390,新北市西屯區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-26 6:27:07,2026-02-26 6:27:07
+202903350926608908,2862,桃園市北區店,繳費機,立保(繳費機),1004 - 卡幣 - 上幣道卡幣 (2602000673709946) (TW260610320333T),異常,,,已完成,2026-03-04 :7:39,2026-03-04 :7:39
+202667074707203808,664,台中市左營區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-25 22:48:54,2026-02-25 22:48:54
+2024722630223673,1998,台南市信義區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-20 3:06:02,2026-02-20 3:06:02
+2029022400608784465,1235,高雄市大安區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-04 0:33:32,2026-03-04 0:33:32
+2029077969653805,1268,台北市中山區店,繳費機,博辰(繳費機),少找錢,異常,,,已完成,2026-03-04 6:02:52,2026-03-04 6:02:52
+2026872894984573008,619,新北市板橋區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-02-26 2:02:00,2026-02-26 2:02:00
+202656388244848670,2373,桃園市新莊區店,繳費機,博辰(繳費機),少找錢,異常,,,已完成,2026-02-25 5:04:30,2026-02-25 5:04:30
+202836785998042733,671,台中市中壢區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-02 5:02:37,2026-03-02 5:02:37
+202570090468423462,1674,台南市東區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-23 6:35:05,2026-02-23 6:35:05
+202648359749206027,1075,高雄市西屯區店,繳費機,博辰(繳費機),少找錢,異常,,,已完成,2026-02-25 0:25:04,2026-02-25 0:25:04
+2028375588949090342,445,台北市北區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-02 5:43:20,2026-03-02 5:43:20
+20293634794747558,1502,新北市左營區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-05 9:08:05,2026-03-05 9:08:05
+20258457272764220,174,桃園市信義區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-23 6:00:34,2026-02-23 6:00:34
+2029049549299683352,126,台中市大安區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-04 2:02:25,2026-03-04 2:02:25
+202830366588839433,1581,台南市中山區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-03-02 0:57:32,2026-03-02 0:57:32
+20295549244726240,1238,高雄市板橋區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-05 2:35:57,2026-03-05 2:35:57
+202875267652227395,172,台北市新莊區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-03-03 6:04:45,2026-03-03 6:04:45
+20294783257565526,901,新北市中壢區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-05 6:45:03,2026-03-05 6:45:03
+2025080490646425685,1980,桃園市東區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-02 3:29:47,2026-02-02 3:29:47
+2026678937775689734,2571,台中市西屯區店,繳費機,博辰(繳費機),1004 - 卡幣 - 上幣道卡幣 (2602000673709946) (TW260610320333T),異常,,,已完成,2026-02-25 23:02:27,2026-02-25 23:02:27
+202680454973755450,1181,台南市北區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-24 4:20:39,2026-02-24 4:20:39
+20294944944232489,1256,高雄市左營區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-05 7:49:28,2026-03-05 7:49:28
+20284984569877727,2381,台北市信義區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-02 23:05:34,2026-03-02 23:05:34
+2028768746458894425,160,新北市大安區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-03-03 7:45:36,2026-03-03 7:45:36
+202975294208600667,44,桃園市中山區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-06 0:56:26,2026-03-06 0:56:26
+2029563966829297725,1737,台中市板橋區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-03-05 22:25:03,2026-03-05 22:25:03
+202956322685063746,2622,台南市新莊區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-05 22:22:35,2026-03-05 22:22:35
+20294209584807235,2195,高雄市中壢區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-05 2:22:02,2026-03-05 2:22:02
+2028286095504072790,2030,台北市東區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-03-02 9:47:43,2026-03-02 9:47:43
+2028047590706274383,1609,新北市西屯區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-0 7:59:59,2026-03-0 7:59:59
+2028020886270322,1747,桃園市北區店,繳費機,博辰(繳費機),少找錢,異常,,,已完成,2026-03-0 6:3:5,2026-03-0 6:3:5
+202644660289625957,2837,台中市左營區店,繳費機,博辰(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-25 7:58:04,2026-02-25 7:58:04
+202653077586083845,2890,台南市信義區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-02-25 3:32:28,2026-02-25 3:32:28
+2029537453374922825,2318,高雄市大安區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-03-05 20:40:00,2026-03-05 20:40:00
+2025772694594008,1267,台北市中山區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-02-23 :4:42,2026-02-23 :4:42
+2029532284052349005,943,新北市板橋區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-05 20:09:38,2026-03-05 20:09:38
+202869822273937825,2934,桃園市新莊區店,繳費機,博辰(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-03 3:05:22,2026-03-03 3:05:22
+202849207045587039,2341,台中市中壢區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-03-02 8:36:39,2026-03-02 8:36:39
+202800438444375665,2825,台南市東區店,繳費機,立保(繳費機),201 - 卡鈔 - 設備狀態錯誤，無法下達命令,異常,,,已完成,2026-03-0 5:08:8,2026-03-0 5:08:8
+202586942924785600,1043,高雄市西屯區店,繳費機,博辰(繳費機),少找錢,異常,,,已完成,2026-02-23 7:44:45,2026-02-23 7:44:45
+2029339405328863279,2256,台北市北區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-05 7:33:02,2026-03-05 7:33:02
+2028730009360322560,2857,新北市左營區店,繳費機,立保(繳費機),"205 - 卡鈔 - 100元/500元循環箱卡鈔; 應繳: 153; 已投: {""RS900.NT100"":0}",異常,,,已完成,2026-03-03 5::40,2026-03-03 5::40
+2026508000332550243,2866,桃園市信義區店,繳費機,立保(繳費機),少找錢,異常,,,已完成,2026-02-25 2:02:02,2026-02-25 2:02:02</script>
+<script type="text/plain" id="csv-live">
+包裹配送編號,查詢建立時間,查詢者,備註,影片處理狀況
+TW267228759905R,2026-03-04 0:39:03,amber.hocy@shopee.com,,下載中
+TW264028353302,2026-03-04 0:29:53,amber.hocy@shopee.com,,下載中
+TW26549085S,2026-02-26 9:20:06,amber.hocy@shopee.com,,已完成
+TW26549085S,2026-03-02 7:35:00,ellie.hsu@shopee.com,,下載中
+TW26904357648F,2026-03-02 9:06:00,ellie.hsu@shopee.com,,下載中
+TW266380563357Z,2026-02-26 5:59:47,amber.hocy@shopee.com,,已完成
+TW26867259759L,2026-03-06 2:59:32,andy.wu@shopee.com,,已完成
+TW2686258835C,2026-03-05 9:48:55,andy.wu@shopee.com,,已完成
+TW26084638094X,2026-02-25 7:59:09,andy.wu@shopee.com,,已完成
+TW260032854034,2026-02-27 9:08:03,amber.hocy@shopee.com,,已完成
+TW26559697363,2026-03-03 22:29:05,ellie.hsu@shopee.com,,已完成
+TW26559697363,2026-03-03 22:08:45,andy.wu@shopee.com,,已完成
+TW25040433463H,2026-03-03 0:45:03,ellie.hsu@shopee.com,,已完成
+TW268029893304P,2026-02-26 0:00:08,amber.hocy@shopee.com,,已完成
+TW26644040294,2026-03-03 0:53:09,amber.hocy@shopee.com,,已完成
+,2026-03-05 4:57:49,amber.hocy@shopee.com,,已完成
+TW262069844855I,2026-03-06 4:00:40,ellie.hsu@shopee.com,,已完成
+TW260498939035O,2026-02-23 7:22:28,ellie.hsu@shopee.com,,已完成
+TW266040696360,2026-02-26 5:26:28,amber.hocy@shopee.com,,已完成
+TW268275630202C,2026-03-05 0:00:32,andy.wu@shopee.com,,已完成
+,2026-03-02 :43:28,andy.wu@shopee.com,,已完成
+TW26558430905J,2026-03-02 5:43:03,andy.wu@shopee.com,,已完成
+TW2655085447V,2026-02-24 0:07:56,amber.hocy@shopee.com,,已完成
+TW2677692304D,2026-02-24 7:05:05,ellie.hsu@shopee.com,,下載失敗
+,2026-03-04 2:05:00,andy.wu@shopee.com,,已完成
+,2026-03-06 9:34:44,ellie.hsu@shopee.com,,已完成
+TW262630059345C,2026-03-05 7:44:00,andy.wu@shopee.com,,已完成
+TW267895407046,2026-02-25 20:05:23,ellie.hsu@shopee.com,,已完成
+TW26730596977,2026-03-05 8:22:03,andy.wu@shopee.com,,已完成
+TW26950074743F,2026-03-0 7:6:34,amber.hocy@shopee.com,,已完成
+TW26823664652H,2026-03-05 6:56:09,amber.hocy@shopee.com,,已完成
+TW266244225875Z,2026-02-22 8:05:02,amber.hocy@shopee.com,,已完成
+TW2689569664F,2026-02-27 0:24:25,ellie.hsu@shopee.com,,已完成
+TW263023476349N,2026-02-25 2:23:29,ellie.hsu@shopee.com,,已完成
+TW26835890009O,2026-02-24 3:02:24,amber.hocy@shopee.com,,已完成
+TW264457066826D,2026-03-02 9:50:33,andy.wu@shopee.com,,已完成
+TW26227824297O,2026-02-25 20:05:36,andy.wu@shopee.com,,已完成
+,2026-03-05 :32:38,andy.wu@shopee.com,,已完成
+TW260426470279V,2026-03-04 3:58:25,amber.hocy@shopee.com,,已完成
+TW26566253320T,2026-02-26 20:47:04,ellie.hsu@shopee.com,,已完成
+TW26566253320T,2026-02-26 9:05:28,andy.wu@shopee.com,,已完成
+,2026-02-22 2:59:07,ellie.hsu@shopee.com,,已完成
+TW2674975068K,2026-03-02 4:07:55,andy.wu@shopee.com,,已完成
+TW26770880859,2026-02-23 5:24:09,ellie.hsu@shopee.com,,已完成
+TW2633688454Z,2026-02-28 :9:04,andy.wu@shopee.com,,已完成
+TW26792770455L,2026-02-27 9:04:08,ellie.hsu@shopee.com,,已完成
+TW26792770455L,2026-02-27 9:05:56,amber.hocy@shopee.com,,已完成
+TW266464666938L,2026-03-05 4:43:49,amber.hocy@shopee.com,,已完成
+TW263028269054,2026-02-23 6:33:00,amber.hocy@shopee.com,,已完成
+,2026-02-23 6:02:49,ellie.hsu@shopee.com,,已完成
+TW26084354638J,2026-03-04 9:30:04,ellie.hsu@shopee.com,,已完成
+TW26003864227T,2026-02-27 8:39:56,amber.hocy@shopee.com,,已完成
+TW2626790743,2026-02-27 9:50:02,andy.wu@shopee.com,,已完成
+TW262465827557O,2026-03-04 4:44:05,andy.wu@shopee.com,,已完成
+TW26772698864I,2026-03-03 :2:23,andy.wu@shopee.com,,已完成
+TW264098232706T,2026-03-05 7:34:03,amber.hocy@shopee.com,,已完成
+TW26223388727O,2026-02-26 9:32:02,ellie.hsu@shopee.com,,已完成
+TW2664072998569,2026-03-05 22:06:34,andy.wu@shopee.com,,已完成
+TW265733427307Q,2026-03-05 6:27:04,ellie.hsu@shopee.com,,已完成
+TW269896999638,2026-03-03 0:26:27,andy.wu@shopee.com,,已完成
+TW262868299628E,2026-03-03 9:07:20,ellie.hsu@shopee.com,,已完成
+TW26943982062,2026-02-22 20:22:59,andy.wu@shopee.com,,已完成
+TW2665556085J,2026-03-03 7:05:39,ellie.hsu@shopee.com,,已完成
+,2026-02-23 3:07:00,amber.hocy@shopee.com,,已完成
+TW2686065548T,2026-02-25 8:29:53,amber.hocy@shopee.com,,已完成
+TW266399898858T,2026-02-24 7:45:22,amber.hocy@shopee.com,,已完成
+TW263055946209D,2026-03-06 7:49:02,ellie.hsu@shopee.com,,已完成
+TW262425832438K,2026-03-02 9:27:23,amber.hocy@shopee.com,,已完成
+TW264770202234X,2026-03-05 3:54:26,amber.hocy@shopee.com,,已完成
+TW26398037924K,2026-03-05 8:38:26,ellie.hsu@shopee.com,,已完成
+TW26635958268X,2026-03-04 6:08:04,ellie.hsu@shopee.com,,已完成
+TW262594320909S,2026-03-06 3:58:35,amber.hocy@shopee.com,,已完成
+TW2670702400598,2026-03-06 9:46:03,andy.wu@shopee.com,,已完成
+TW263040375827,2026-03-04 22:57:04,andy.wu@shopee.com,,已完成
+TW2629400625J,2026-03-03 5:05:37,andy.wu@shopee.com,,已完成
+TW260869502364Q,2026-02-20 4:04:03,amber.hocy@shopee.com,,已完成
+TW260869502364Q,2026-02-27 7:54:52,ellie.hsu@shopee.com,,已完成
+TW260869502364Q,2026-03-04 9:42:04,andy.wu@shopee.com,,已完成
+TW26789897743M,2026-03-03 20:00:24,ellie.hsu@shopee.com,,已完成
+TW26735429220P,2026-03-03 0:02:08,amber.hocy@shopee.com,,已完成
+TW257424555I,2026-02-24 2:02:34,amber.hocy@shopee.com,,已完成
+TW26727443660,2026-03-05 8:37:23,ellie.hsu@shopee.com,,已完成
+TW26743427530S,2026-02-02 4:06:45,ellie.hsu@shopee.com,,已完成
+TW26743427530S,2026-02-24 0:30:52,amber.hocy@shopee.com,,已完成
+TW262625573263J,2026-03-05 6:08:28,andy.wu@shopee.com,,已完成
+TW26443884540Q,2026-02-27 3:03:04,andy.wu@shopee.com,,已完成
+TW268665224955O,2026-03-04 6:56:58,andy.wu@shopee.com,,已完成
+TW263529806493P,2026-03-04 7:29:00,amber.hocy@shopee.com,,已完成
+TW269705063677L,2026-02-25 7::46,ellie.hsu@shopee.com,,已完成
+TW26064847250,2026-02-22 7:58:03,andy.wu@shopee.com,,已完成
+TW266340694433O,2026-03-02 7:34:05,ellie.hsu@shopee.com,,已完成
+TW266340694433O,2026-02-27 7:03:54,amber.hocy@shopee.com,,已完成
+TW266340694433O,2026-02-27 7:59:26,amber.hocy@shopee.com,,已完成
+TW26673927W,2026-02-27 5:27:39,amber.hocy@shopee.com,,已完成
+TW26790885485N,2026-02-27 2:30:04,ellie.hsu@shopee.com,,已完成
+TW2687580956,2026-03-05 2:37:25,ellie.hsu@shopee.com,,已完成
+TW2603360535S,2026-03-02 2:25:42,amber.hocy@shopee.com,,已完成
+,2026-03-06 :47:28,andy.wu@shopee.com,,已完成
+TW26874575073V,2026-02-27 8:59:40,andy.wu@shopee.com,,已完成
+TW267458384067,2026-03-0 6:0:58,andy.wu@shopee.com,,已完成
+TW26557673288X,2026-03-03 4:34:22,amber.hocy@shopee.com,,已完成
+,2026-03-02 2:02:24,ellie.hsu@shopee.com,,已完成
+TW26583666240A,2026-03-02 6:54:02,andy.wu@shopee.com,,已完成
+TW26583666240A,2026-03-02 8:46:57,ellie.hsu@shopee.com,,已完成
+TW26583666240A,2026-03-02 8:08:34,andy.wu@shopee.com,,已完成
+TW2642887532328,2026-02-25 8:52:56,ellie.hsu@shopee.com,,已完成
+TW26356055932,2026-03-02 23:42:25,andy.wu@shopee.com,,已完成
+TW26356055932,2026-03-03 6:30:09,amber.hocy@shopee.com,,已完成
+TW26356055932,2026-03-03 7:02:54,amber.hocy@shopee.com,,已完成
+TW260609886984P,2026-02-25 2:55:00,amber.hocy@shopee.com,,已完成
+,2026-03-04 0:00:06,ellie.hsu@shopee.com,,已完成
+,2026-03-04 6:48:02,ellie.hsu@shopee.com,,已完成
+,2026-03-05 :57:37,amber.hocy@shopee.com,,已完成
+TW26473089824I,2026-03-05 7::29,andy.wu@shopee.com,,已完成
+TW2645437783862,2026-02-20 4:42:44,andy.wu@shopee.com,,已完成
+TW2624946089L,2026-03-04 6:58:29,andy.wu@shopee.com,,已完成
+TW269527855063O,2026-02-27 0:02:33,amber.hocy@shopee.com,,已完成
+TW266000303883G,2026-02-02 6:47:59,ellie.hsu@shopee.com,,已完成
+TW264762036278,2026-02-02 2:39:24,andy.wu@shopee.com,,已完成
+TW2624023730684,2026-03-03 :8:54,ellie.hsu@shopee.com,,已完成
+TW26372298680L,2026-02-2 :40:2,andy.wu@shopee.com,,已完成
+TW26956672775U,2026-03-06 9:36:02,ellie.hsu@shopee.com,,已完成
+TW26669226056I,2026-03-04 4:30:26,andy.wu@shopee.com,,已完成
+TW269770822007J,2026-02-25 9:05:06,ellie.hsu@shopee.com,,已完成
+TW267005484827,2026-02-25 22:0:,amber.hocy@shopee.com,,已完成
+TW26468540N,2026-03-0 0:48:2,amber.hocy@shopee.com,,已完成
+TW268834990370J,2026-02-02 0:07:32,amber.hocy@shopee.com,,已完成
+TW26264097358O,2026-02-02 5:32:42,ellie.hsu@shopee.com,,已完成
+TW26808258950Q,2026-02-25 8:34:58,ellie.hsu@shopee.com,,已完成
+TW268547476407,2026-02-26 :34:7,amber.hocy@shopee.com,,已完成
+,2026-03-02 7:02:03,andy.wu@shopee.com,,已完成
+TW269093088673H,2026-02-24 9:26:04,andy.wu@shopee.com,,已完成
+TW2693606209D,2026-02-26 9:08:27,andy.wu@shopee.com,,已完成
+TW2632084962,2026-03-03 20:00:25,amber.hocy@shopee.com,,已完成
+TW260897470060X,2026-03-05 2:44:39,ellie.hsu@shopee.com,,已完成
+TW26882723506H,2026-02-20 0:32:34,andy.wu@shopee.com,,已完成
+TW2634843567P,2026-03-02 5:59:56,ellie.hsu@shopee.com,,已完成
+TW26997099996W,2026-03-02 4:04:00,andy.wu@shopee.com,,已完成
+TW26655739282O,2026-02-02 8:30:04,ellie.hsu@shopee.com,,已完成
+TW26995208769J,2026-02-24 0:04:49,andy.wu@shopee.com,,已完成
+TW265028272368V,2026-03-03 22:52:48,ellie.hsu@shopee.com,,已完成
+TW26555723755K,2026-02-22 8:52:06,amber.hocy@shopee.com,,已完成
+TW26555723755K,2026-02-22 7:29:04,amber.hocy@shopee.com,,已完成
+TW260767077497S,2026-02-25 0:50:05,amber.hocy@shopee.com,,已完成
+TW267470789850Y,2026-02-25 9:39:03,ellie.hsu@shopee.com,,已完成
+TW2674570463775,2026-03-03 6:23:32,ellie.hsu@shopee.com,,已完成
+TW25666280858,2026-03-04 0:06:20,amber.hocy@shopee.com,,已完成
+TW263478246566M,2026-03-06 3:06:06,andy.wu@shopee.com,,已完成
+TW26004593366G,2026-03-04 3:05:07,andy.wu@shopee.com,,已完成
+TW262586358V,2026-02-22 6:48:04,amber.hocy@shopee.com,,已完成
+TW262586358V,2026-02-24 2:53:57,amber.hocy@shopee.com,,已完成
+TW26978046524T,2026-03-04 2:05:02,ellie.hsu@shopee.com,,已完成
+,2026-03-02 4:03:22,ellie.hsu@shopee.com,,已完成
+TW26980858932J,2026-03-05 7:26:07,amber.hocy@shopee.com,,已完成
+TW268765738643B,2026-02-22 3:58:22,andy.wu@shopee.com,,已完成
+TW2655575959,2026-02-24 0:04:26,andy.wu@shopee.com,,已完成
+TW26425270844G,2026-02-26 6:27:07,andy.wu@shopee.com,,已完成
+TW26692499764J,2026-03-04 :7:39,amber.hocy@shopee.com,,已完成
+TW263929234697Y,2026-02-25 22:48:54,ellie.hsu@shopee.com,,已完成
+TW2698600906D,2026-02-20 3:06:02,andy.wu@shopee.com,,已完成
+TW260228327287X,2026-03-04 0:33:32,ellie.hsu@shopee.com,,已完成
+TW2695925355828,2026-03-04 6:02:52,amber.hocy@shopee.com,,已完成
+TW269663809937Z,2026-02-26 2:02:00,amber.hocy@shopee.com,,已完成
+TW26573255026P,2026-02-25 5:04:30,amber.hocy@shopee.com,,已完成
+TW264885720244U,2026-03-02 5:02:37,ellie.hsu@shopee.com,,已完成
+TW260322896064Q,2026-02-23 6:35:05,ellie.hsu@shopee.com,,已完成
+,2026-02-25 0:25:04,amber.hocy@shopee.com,,已完成
+TW26449000990,2026-03-02 5:43:20,andy.wu@shopee.com,,已完成
+TW263396689597N,2026-03-05 9:08:05,andy.wu@shopee.com,,已完成
+TW26834228476C,2026-02-23 6:00:34,andy.wu@shopee.com,,已完成
+TW268494668Y,2026-03-04 2:02:25,amber.hocy@shopee.com,,已完成
+TW26735425287A,2026-03-02 0:57:32,ellie.hsu@shopee.com,,已完成
+,2026-03-05 2:35:57,andy.wu@shopee.com,,已完成
+TW260649096382V,2026-03-03 6:04:45,ellie.hsu@shopee.com,,已完成
+TW2653742588,2026-03-05 6:45:03,andy.wu@shopee.com,,已完成
+TW269655733706E,2026-02-02 3:29:47,ellie.hsu@shopee.com,,已完成
+TW26550405982,2026-02-25 23:02:27,andy.wu@shopee.com,,已完成
+TW263053893782M,2026-02-24 4:20:39,amber.hocy@shopee.com,,已完成
+,2026-03-05 7:49:28,amber.hocy@shopee.com,,已完成
+TW2654507334662,2026-03-02 23:05:34,amber.hocy@shopee.com,,已完成
+TW26666353575,2026-03-03 7:45:36,ellie.hsu@shopee.com,,已完成
+TW26448295200L,2026-03-06 0:56:26,ellie.hsu@shopee.com,,已完成
+TW2633423424462,2026-03-05 22:25:03,amber.hocy@shopee.com,,已完成
+TW2695468004C,2026-03-05 22:22:35,andy.wu@shopee.com,,已完成
+,2026-03-05 2:22:02,andy.wu@shopee.com,,已完成
+TW26724037409,2026-03-02 9:47:43,andy.wu@shopee.com,,已完成
+TW26377462052O,2026-03-0 7:59:59,amber.hocy@shopee.com,,已完成
+TW26340670777Q,2026-03-0 6:3:5,ellie.hsu@shopee.com,,已完成
+TW2643259295Y,2026-02-25 7:58:04,andy.wu@shopee.com,,已完成
+TW263348939405,2026-02-25 3:32:28,ellie.hsu@shopee.com,,已完成
+TW26942430842F,2026-03-05 20:40:00,amber.hocy@shopee.com,,已完成
+TW2474367729G,2026-02-23 :4:42,amber.hocy@shopee.com,,已完成
+TW25677609255K,2026-03-05 20:09:38,ellie.hsu@shopee.com,,已完成
+TW26802657269G,2026-03-03 3:05:22,ellie.hsu@shopee.com,,已完成
+TW26760282J,2026-03-02 8:36:39,amber.hocy@shopee.com,,已完成
+TW267640843447I,2026-03-0 5:08:8,andy.wu@shopee.com,,已完成
+TW2653668949N,2026-02-23 7:44:45,andy.wu@shopee.com,,已完成
+TW2607768800552,2026-03-05 7:33:02,andy.wu@shopee.com,,已完成
+,2026-03-03 5::40,amber.hocy@shopee.com,,已完成
+TW265099983267,2026-02-25 2:02:02,ellie.hsu@shopee.com,,已完成
+TW2675778567Z,2026-02-27 3:33:29,andy.wu@shopee.com,,已完成
+TW26478447N,2026-03-05 7:30:04,ellie.hsu@shopee.com,,已完成
+TW2694434782,2026-03-05 9:38:29,amber.hocy@shopee.com,,已完成
+,2026-02-28 0:09:23,amber.hocy@shopee.com,,已完成
+,2026-02-28 9:05:38,amber.hocy@shopee.com,,已完成
+,2026-02-23 :57:0,ellie.hsu@shopee.com,,已完成</script>
+
+    <script>
+      ;(function () {
+        var TAB_PACKAGE = 'package'
+        var TAB_KIOSK = 'kiosk'
+        var TAB_LIVE = 'live'
+        var PAGE_SIZE = 20
+
+        var COPYABLE = { 案件編號: 1, 退貨物流編號: 1, 包裹配送編號: 1 }
+
+        function readEmbeddedCsv(id) {
+          var el = document.getElementById(id)
+          if (!el) return ''
+          return el.textContent.replace(/^\s+|\s+$/g, '')
+        }
+
+        var state = {
+          packageTable: { columns: [], rows: [] },
+          packageDetail: { columns: [], rows: [] },
+          kioskTable: { columns: [], rows: [] },
+          liveTable: { columns: [], rows: [] },
+          liveExtra: [],
+          activeTab: TAB_PACKAGE,
+          view: 'list',
+          detailFrom: TAB_PACKAGE,
+          selectedRow: null,
+          currentPage: 1,
+          packageDetailTab: 'pickup',
+          selectedTrackingTab: '0',
+          filters: {
+            package: { caseId: '', trackingNo: '', from: '', to: '' },
+            kiosk: { store: '', taskId: '', vendor: '', abnormal: '', from: '', to: '' },
+            live: { trackingRaw: '', from: '', to: '' },
+          },
+        }
+
+        function normalizeText(v) {
+          return String(v == null ? '' : v).trim()
+        }
+
+        function includesInsensitive(hay, needle) {
+          if (!needle) return true
+          return hay.toLowerCase().includes(needle.toLowerCase())
+        }
+
+        function parseLooseDateTimeToMs(input) {
+          var s = normalizeText(input)
+          if (!s) return null
+          var ms = Date.parse(s.replace(/-/g, '/'))
+          return isNaN(ms) ? null : ms
+        }
+
+        function dateInputToMsStart(isoDate) {
+          if (!isoDate) return null
+          var t = Date.parse(isoDate + 'T00:00:00')
+          return isNaN(t) ? null : t
+        }
+
+        function dateInputToMsEnd(isoDate) {
+          if (!isoDate) return null
+          var t = Date.parse(isoDate + 'T23:59:59.999')
+          return isNaN(t) ? null : t
+        }
+
+        function parseCsvLine(line) {
+          var cells = []
+          var i = 0
+          var current = ''
+          var inQuotes = false
+          while (i < line.length) {
+            var ch = line[i]
+            if (inQuotes) {
+              if (ch === '"') {
+                var next = line[i + 1]
+                if (next === '"') {
+                  current += '"'
+                  i += 2
+                  continue
+                }
+                inQuotes = false
+                i += 1
+                continue
+              }
+              current += ch
+              i += 1
+              continue
+            }
+            if (ch === '"') {
+              inQuotes = true
+              i += 1
+              continue
+            }
+            if (ch === ',') {
+              cells.push(current)
+              current = ''
+              i += 1
+              continue
+            }
+            current += ch
+            i += 1
+          }
+          cells.push(current)
+          return cells
+        }
+
+        function parseCsvText(text) {
+          var lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
+          var nonEmpty = lines.filter(function (l) {
+            return l.trim().length > 0
+          })
+          if (nonEmpty.length === 0) return { columns: [], rows: [] }
+
+          var headerLineIdx = 0
+          var scan = Math.min(nonEmpty.length, 12)
+          for (var idx = 0; idx < scan; idx++) {
+            var L = nonEmpty[idx]
+            if (
+              L.indexOf('案件編號') !== -1 ||
+              L.indexOf('任務編號') !== -1 ||
+              L.indexOf('包裹配送編號') !== -1
+            ) {
+              headerLineIdx = idx
+              break
+            }
+          }
+
+          var rawHeaders = parseCsvLine(nonEmpty[headerLineIdx]).map(function (h) {
+            return h.trim()
+          })
+          var columns = rawHeaders.map(function (title, idx) {
+            return { title: title, key: title.length > 0 ? title : '__col_' + idx }
+          })
+
+          var rows = []
+          for (var r = headerLineIdx + 1; r < nonEmpty.length; r++) {
+            var cells = parseCsvLine(nonEmpty[r])
+            var row = { key: String(rows.length + 1) }
+            for (var c = 0; c < columns.length; c++) {
+              row[columns[c].key] = (cells[c] || '').trim()
+            }
+            rows.push(row)
+          }
+          return { columns: columns, rows: rows }
+        }
+
+        function escapeHtml(s) {
+          return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+        }
+
+        function cellHtml(colKey, colTitle, rawVal) {
+          var v = normalizeText(rawVal)
+          var display = v || '—'
+          var inner = escapeHtml(display)
+          if (COPYABLE[colTitle]) {
+            inner =
+              '<span class="copy-wrap"><span>' +
+              inner +
+              '</span><button type="button" class="copy-btn" data-copy="' +
+              escapeHtml(v) +
+              '" title="複製">⎘</button></span>'
+          }
+          return inner
+        }
+
+        function renderStatusPill(v) {
+          var t = normalizeText(v)
+          if (!t) return '—'
+          if (t === '未取件') return '<span class="pill red">' + escapeHtml(t) + '</span>'
+          return '<span class="pill cyan">' + escapeHtml(t) + '</span>'
+        }
+
+        function filteredPackageRows() {
+          var f = state.filters.package
+          var caseNeedle = normalizeText(f.caseId)
+          var trackNeedle = normalizeText(f.trackingNo)
+          var fromMs = dateInputToMsStart(f.from)
+          var toMs = dateInputToMsEnd(f.to)
+          return state.packageTable.rows.filter(function (r) {
+            if (!includesInsensitive(normalizeText(r['案件編號']), caseNeedle)) return false
+            if (!includesInsensitive(normalizeText(r['包裹配送編號']), trackNeedle)) return false
+            if (fromMs || toMs) {
+              var createdMs = parseLooseDateTimeToMs(r['案件建立時間'])
+              if (createdMs == null) return false
+              if (fromMs && createdMs < fromMs) return false
+              if (toMs && createdMs > toMs) return false
+            }
+            return true
+          })
+        }
+
+        function filteredKioskRows() {
+          var f = state.filters.kiosk
+          var storeNeedle = normalizeText(f.store)
+          var taskNeedle = normalizeText(f.taskId)
+          var vendorMap = { libao: '立保', bochen: '博辰' }
+          var abnormalMap = { '1004': '1004', short: '少找錢', state: '狀態錯誤' }
+          var vendorKey = vendorMap[f.vendor] || f.vendor
+          var abnormalKey = abnormalMap[f.abnormal] || f.abnormal
+          var fromMs = dateInputToMsStart(f.from)
+          var toMs = dateInputToMsEnd(f.to)
+          return state.kioskTable.rows.filter(function (r) {
+            var storeId = normalizeText(r['門市編號'])
+            var storeName = normalizeText(r['門市名稱'])
+            var taskId = normalizeText(r['任務編號'])
+            var vendor = normalizeText(r['廠商'])
+            var abnormal = normalizeText(r['異常狀況'])
+            if (storeNeedle) {
+              if (!includesInsensitive(storeId, storeNeedle) && !includesInsensitive(storeName, storeNeedle))
+                return false
+            }
+            if (!includesInsensitive(taskId, taskNeedle)) return false
+            if (vendorKey && !includesInsensitive(vendor, vendorKey)) return false
+            if (abnormalKey && !includesInsensitive(abnormal, abnormalKey)) return false
+            if (fromMs || toMs) {
+              var t1 = parseLooseDateTimeToMs(r['異常發生時間'])
+              var t2 = parseLooseDateTimeToMs(r['更新時間'])
+              var createdMs = t1 != null ? t1 : t2
+              if (createdMs == null) return false
+              if (fromMs && createdMs < fromMs) return false
+              if (toMs && createdMs > toMs) return false
+            }
+            return true
+          })
+        }
+
+        function liveAllRows() {
+          return state.liveExtra.concat(state.liveTable.rows)
+        }
+
+        function filteredLiveRows() {
+          var f = state.filters.live
+          var raw = normalizeText(f.trackingRaw)
+          var list = raw
+            ? raw
+                .split(',')
+                .map(function (s) {
+                  return s.trim()
+                })
+                .filter(Boolean)
+            : []
+          var fromMs = dateInputToMsStart(f.from)
+          var toMs = dateInputToMsEnd(f.to)
+          return liveAllRows().filter(function (r) {
+            var tracking = normalizeText(r['包裹配送編號'])
+            if (list.length > 0 && list.indexOf(tracking) === -1) return false
+            if (fromMs || toMs) {
+              var createdMs = parseLooseDateTimeToMs(r['查詢建立時間'])
+              if (createdMs == null) return false
+              if (fromMs && createdMs < fromMs) return false
+              if (toMs && createdMs > toMs) return false
+            }
+            return true
+          })
+        }
+
+        function currentFilteredRows() {
+          if (state.activeTab === TAB_PACKAGE) return filteredPackageRows()
+          if (state.activeTab === TAB_KIOSK) return filteredKioskRows()
+          return filteredLiveRows()
+        }
+
+        /** 詳情頁上一筆／下一筆：依進入詳情時的列表來源（detailFrom） */
+        function detailNavRows() {
+          if (state.detailFrom === TAB_KIOSK) return filteredKioskRows()
+          if (state.detailFrom === TAB_LIVE) return filteredLiveRows()
+          return filteredPackageRows()
+        }
+
+        function detailNavIndex() {
+          var rows = detailNavRows()
+          var row = state.selectedRow
+          if (!row) return -1
+          var i
+          for (i = 0; i < rows.length; i++) {
+            if (String(rows[i].key) === String(row.key)) return i
+          }
+          if (state.detailFrom === TAB_KIOSK) {
+            var tid = normalizeText(row['任務編號'])
+            for (i = 0; i < rows.length; i++) {
+              if (normalizeText(rows[i]['任務編號']) === tid) return i
+            }
+          } else if (state.detailFrom === TAB_LIVE) {
+            var trk = normalizeText(row['包裹配送編號'])
+            for (i = 0; i < rows.length; i++) {
+              if (normalizeText(rows[i]['包裹配送編號']) === trk) return i
+            }
+          } else {
+            var cid = normalizeText(row['案件編號'])
+            var tno = normalizeText(row['包裹配送編號'])
+            for (i = 0; i < rows.length; i++) {
+              if (
+                normalizeText(rows[i]['案件編號']) === cid &&
+                normalizeText(rows[i]['包裹配送編號']) === tno
+              )
+                return i
+            }
+          }
+          return -1
+        }
+
+        function goDetailPrev() {
+          var rows = detailNavRows()
+          var idx = detailNavIndex()
+          if (idx <= 0) return
+          state.selectedRow = rows[idx - 1]
+          state.packageDetailTab = 'pickup'
+          state.selectedTrackingTab = '0'
+          renderDetail()
+        }
+
+        function goDetailNext() {
+          var rows = detailNavRows()
+          var idx = detailNavIndex()
+          if (idx < 0 || idx >= rows.length - 1) return
+          state.selectedRow = rows[idx + 1]
+          state.packageDetailTab = 'pickup'
+          state.selectedTrackingTab = '0'
+          renderDetail()
+        }
+
+        function currentColumns() {
+          if (state.activeTab === TAB_PACKAGE) return state.packageTable.columns
+          if (state.activeTab === TAB_KIOSK) return state.kioskTable.columns
+          return state.liveTable.columns
+        }
+
+        function pageSlice() {
+          var all = currentFilteredRows()
+          var start = (state.currentPage - 1) * PAGE_SIZE
+          return { all: all, pageRows: all.slice(start, start + PAGE_SIZE), total: all.length }
+        }
+
+        function setBreadcrumb() {
+          var el = document.getElementById('breadcrumb')
+          var parts = ['<span>首頁</span>', '<span>SPX 案件排查中心</span>']
+          if (state.view === 'list') {
+            if (state.activeTab === TAB_PACKAGE) parts.push('<span>包裹案件</span>')
+            else if (state.activeTab === TAB_KIOSK) parts.push('<span>繳費機案件</span>')
+            else parts.push('<span>即時查詢</span>')
+          } else {
+            var id = '—'
+            if (state.detailFrom === TAB_LIVE) id = normalizeText(state.selectedRow['包裹配送編號']) || '—'
+            else if (state.detailFrom === TAB_KIOSK) id = normalizeText(state.selectedRow['任務編號']) || '—'
+            else id = normalizeText(state.selectedRow['案件編號']) || '—'
+            if (state.detailFrom === TAB_PACKAGE) parts.push('<span>包裹案件</span>')
+            else if (state.detailFrom === TAB_KIOSK) parts.push('<span>繳費機案件</span>')
+            else parts.push('<span>即時查詢</span>')
+            parts.push('<span>' + escapeHtml(id) + '</span>')
+          }
+          el.innerHTML = parts.join('')
+        }
+
+        function setPageDesc() {
+          var el = document.getElementById('page-desc')
+          if (state.activeTab === TAB_KIOSK) {
+            el.textContent =
+              '整合門市包裹異常與繳費機事件監控，協助排查設備異常、廠商與影片處理狀態。'
+          } else if (state.activeTab === TAB_LIVE) {
+            el.textContent = '依包裹配送編號建立即時查詢，檢視查詢紀錄、影片處理狀態與後續動作。'
+          } else {
+            el.textContent = '整合 SPX 門市異常與監控資料，協助快速排查包裹與影片處理狀態。'
+          }
+        }
+
+        function renderList() {
+          setBreadcrumb()
+          setPageDesc()
+          document.getElementById('live-toolbar').classList.toggle('hidden', state.activeTab !== TAB_LIVE)
+          document.getElementById('page-head').classList.toggle('page-head--live', state.activeTab === TAB_LIVE)
+
+          document.getElementById('filter-package').classList.toggle('hidden', state.activeTab !== TAB_PACKAGE)
+          document.getElementById('filter-kiosk').classList.toggle('hidden', state.activeTab !== TAB_KIOSK)
+          document.getElementById('filter-live').classList.toggle('hidden', state.activeTab !== TAB_LIVE)
+
+          document.querySelectorAll('.tabs .tab').forEach(function (btn) {
+            btn.classList.toggle('is-active', btn.getAttribute('data-tab') === state.activeTab)
+          })
+
+          var cols = currentColumns()
+          var thead = document.getElementById('table-head')
+          var tbody = document.getElementById('table-body')
+          var emptyEl = document.getElementById('table-empty')
+          var wrap = document.querySelector('.table-wrap')
+
+          if (cols.length === 0) {
+            thead.innerHTML = ''
+            tbody.innerHTML = ''
+            emptyEl.classList.remove('hidden')
+            emptyEl.textContent = '尚無資料（CSV 尚未載入或格式不符）。'
+            wrap.classList.add('hidden')
+            document.querySelector('.pagination-bar').classList.add('hidden')
+            return
+          }
+
+          var slice = pageSlice()
+          emptyEl.classList.toggle('hidden', slice.total > 0)
+          wrap.classList.toggle('hidden', slice.total === 0)
+          document.querySelector('.pagination-bar').classList.toggle('hidden', slice.total === 0)
+
+          if (slice.total === 0) {
+            if (state.activeTab === TAB_PACKAGE) {
+              emptyEl.innerHTML =
+                '尚無資料，請至 <button type="button" class="btn link" id="empty-goto-live">即時查詢</button> 新增特定包裹資訊與 CCTV'
+              var link = document.getElementById('empty-goto-live')
+              if (link)
+                link.onclick = function () {
+                  state.activeTab = TAB_LIVE
+                  state.currentPage = 1
+                  renderList()
+                }
+            } else {
+              emptyEl.textContent = '沒有符合條件的資料。'
+            }
+            thead.innerHTML = ''
+            tbody.innerHTML = ''
+          } else {
+            var hr = '<tr>'
+            cols.forEach(function (c) {
+              hr += '<th>' + escapeHtml(c.title) + '</th>'
+            })
+            hr += '<th>影片</th></tr>'
+            thead.innerHTML = hr
+
+            tbody.innerHTML = ''
+            slice.pageRows.forEach(function (row) {
+              var tr = document.createElement('tr')
+              var html = ''
+              cols.forEach(function (c) {
+                html += '<td>' + cellHtml(c.key, c.title, row[c.key]) + '</td>'
+              })
+              var status = normalizeText(row['影片處理狀況'])
+              var canView = status === '已完成'
+              html +=
+                '<td><button type="button" class="btn link ' +
+                (canView ? 'video-link' : 'video-link-disabled') +
+                '" data-action="view"' +
+                (canView ? '' : ' disabled') +
+                '>查看</button></td>'
+              tr.innerHTML = html
+              var btn = tr.querySelector('[data-action="view"]')
+              if (btn && canView) {
+                btn.onclick = function () {
+                  openDetail(row, state.activeTab)
+                }
+              }
+              tbody.appendChild(tr)
+            })
+          }
+
+          var maxPage = Math.max(1, Math.ceil(slice.total / PAGE_SIZE))
+          if (state.currentPage > maxPage) {
+            state.currentPage = maxPage
+            renderList()
+            return
+          }
+          var start = slice.total === 0 ? 0 : (state.currentPage - 1) * PAGE_SIZE + 1
+          var end = Math.min(state.currentPage * PAGE_SIZE, slice.total)
+          document.getElementById('page-info').textContent =
+            '第 ' + start + '–' + end + ' 筆，共 ' + slice.total + ' 筆'
+          document.getElementById('page-prev').disabled = state.currentPage <= 1
+          document.getElementById('page-next').disabled = state.currentPage >= maxPage
+
+          document.getElementById('table-body').onclick = function (e) {
+            var t = e.target
+            if (t && t.getAttribute && t.getAttribute('data-copy') != null) {
+              var text = t.getAttribute('data-copy') || ''
+              if (text && navigator.clipboard) navigator.clipboard.writeText(text)
+            }
+          }
+        }
+
+        function packageTrackingTabs() {
+          var seen = {}
+          var unique = []
+          state.packageDetail.rows.forEach(function (r) {
+            var v = normalizeText(r['包裹配送編號'])
+            if (!v || seen[v]) return
+            seen[v] = 1
+            unique.push(v)
+          })
+          if (unique.length) return unique
+          var fb = normalizeText(state.selectedRow && state.selectedRow['包裹配送編號'])
+          return fb ? [fb] : []
+        }
+
+        function renderDetailLeftKiosk() {
+          var row = state.selectedRow
+          var store = normalizeText(row['門市名稱']) || '—'
+          var ab = normalizeText(row['異常狀況']) || '—'
+          return (
+            '<div class="panel">' +
+            '<div class="collapse-hd">異常事件資訊</div>' +
+            '<div class="collapse-bd">' +
+            '<div class="desc-row"><div class="desc-label">門市名稱</div><div>' +
+            escapeHtml(store) +
+            '</div></div>' +
+            '<div class="desc-row"><div class="desc-label">異常狀況</div><div>' +
+            escapeHtml(ab) +
+            '</div></div>' +
+            '</div></div>' +
+            '<div class="panel" style="margin-top:12px">' +
+            '<div class="collapse-hd">備註</div>' +
+            '<div class="collapse-bd">' +
+            '<textarea rows="6" style="width:100%;font:inherit;padding:8px;border:1px solid var(--border);border-radius:8px" placeholder="請輸入說明..."></textarea>' +
+            '<div class="note-actions"><button type="button" class="btn primary">儲存</button></div>' +
+            '</div></div>' +
+            '<div class="detail-nav-footer"><button type="button" class="btn" id="detail-prev">上一筆</button><button type="button" class="btn" id="detail-next">下一筆</button></div>'
+          )
+        }
+
+        function renderDetailLeftPackage() {
+          var row = state.selectedRow || {}
+          var cols = state.packageDetail.columns
+          var head =
+            '<tr>' +
+            cols
+              .map(function (c) {
+                return '<th>' + escapeHtml(c.title) + '</th>'
+              })
+              .join('') +
+            '</tr>'
+          var body = state.packageDetail.rows
+            .map(function (r) {
+              return (
+                '<tr>' +
+                cols
+                  .map(function (c) {
+                    var val = r[c.key]
+                    if (c.title === '訂單狀態' || c.title === '狀態') return '<td>' + renderStatusPill(val) + '</td>'
+                    return '<td>' + escapeHtml(normalizeText(val) || '—') + '</td>'
+                  })
+                  .join('') +
+                '</tr>'
+              )
+            })
+            .join('')
+
+          var caseRow = row
+          var caseCells = [
+            ['案件編號', normalizeText(caseRow['案件編號']) || '—'],
+            ['案件摘要', normalizeText(caseRow['案件摘要']) || '—'],
+            ['案件說明', normalizeText(caseRow['案件說明']) || '—'],
+            ['案件描述', normalizeText(caseRow['案件描述']) || '—'],
+            ['用戶類型', normalizeText(caseRow['用戶類型']) || '—'],
+            ['包裹配送編號', normalizeText(caseRow['包裹配送編號']) || '—'],
+            ['退貨物流編號', normalizeText(caseRow['退貨物流編號']) || '—'],
+            ['案件建立時間', normalizeText(caseRow['案件建立時間']) || '—'],
+          ]
+
+          var caseTable =
+            '<table class="mini"><thead><tr>' +
+            caseCells
+              .map(function (x) {
+                return '<th>' + escapeHtml(x[0]) + '</th>'
+              })
+              .join('') +
+            '</tr></thead><tbody><tr>' +
+            caseCells
+              .map(function (x) {
+                return '<td>' + escapeHtml(x[1]) + '</td>'
+              })
+              .join('') +
+            '</tr></tbody></table>'
+
+          return (
+            '<div class="panel">' +
+            '<div class="collapse-hd">取件資訊</div>' +
+            '<div class="collapse-bd">' +
+            '<div class="desc-row"><div class="desc-label">取件任務編號</div><div>2602000857984290</div></div>' +
+            '<div class="desc-row"><div class="desc-label">取件任務狀態</div><div>已取件</div></div>' +
+            '<div class="desc-row"><div class="desc-label">門市名稱</div><div>[3435] 楊梅新明 - 智取店</div></div>' +
+            '</div></div>' +
+            '<div class="panel" style="margin-top:12px">' +
+            '<div class="collapse-hd">包裹資訊</div>' +
+            '<div class="collapse-bd"><div class="mini-table-wrap"><table class="mini"><thead>' +
+            head +
+            '</thead><tbody>' +
+            body +
+            '</tbody></table></div></div></div>' +
+            '<div class="panel" style="margin-top:12px">' +
+            '<div class="collapse-hd">案件資訊</div>' +
+            '<div class="collapse-bd"><div class="mini-table-wrap">' +
+            caseTable +
+            '</div></div></div>' +
+            '<div class="panel" style="margin-top:12px">' +
+            '<div class="collapse-hd">備註</div>' +
+            '<div class="collapse-bd">' +
+            '<textarea rows="6" style="width:100%;font:inherit;padding:8px;border:1px solid var(--border);border-radius:8px" placeholder="請輸入說明..."></textarea>' +
+            '<div class="note-actions"><button type="button" class="btn primary">儲存</button></div>' +
+            '</div></div>' +
+            '<div class="detail-nav-footer"><button type="button" class="btn" id="detail-prev">上一筆</button><button type="button" class="btn" id="detail-next">下一筆</button></div>'
+          )
+        }
+
+        function wireDetailNav() {
+          var rows = detailNavRows()
+          var idx = detailNavIndex()
+          var prev = document.getElementById('detail-prev')
+          var next = document.getElementById('detail-next')
+          if (prev) {
+            prev.disabled = idx <= 0
+            prev.onclick = function () {
+              goDetailPrev()
+            }
+          }
+          if (next) {
+            next.disabled = idx < 0 || idx >= rows.length - 1
+            next.onclick = function () {
+              goDetailNext()
+            }
+          }
+        }
+
+        function renderGrid(containerId) {
+          var el = document.getElementById(containerId)
+          el.innerHTML = ''
+          for (var i = 0; i < 9; i++) {
+            var tile = document.createElement('div')
+            tile.className = 'detail-media-tile'
+            var ph = document.createElement('div')
+            ph.className = 'ph'
+            ph.textContent = '尚無監視器'
+            tile.appendChild(ph)
+            el.appendChild(tile)
+          }
+        }
+
+        function renderDetailTopTabs() {
+          var wrap = document.getElementById('detail-top-tabs')
+          var isKiosk = state.detailFrom === TAB_KIOSK
+          if (isKiosk) {
+            wrap.innerHTML = ''
+            return
+          }
+          var tab = state.packageDetailTab
+          wrap.innerHTML =
+            '<button type="button" data-ptab="pickup" class="' +
+            (tab === 'pickup' ? 'is-active' : '') +
+            '">用戶取件</button>' +
+            '<button type="button" data-ptab="listing" class="' +
+            (tab === 'listing' ? 'is-active' : '') +
+            '">門市上架</button>'
+          wrap.querySelectorAll('button').forEach(function (b) {
+            b.onclick = function () {
+              state.packageDetailTab = b.getAttribute('data-ptab')
+              renderDetail()
+            }
+          })
+        }
+
+        function renderSubTabs() {
+          var holder = document.getElementById('detail-sub-tabs-wrap')
+          var tabs = packageTrackingTabs()
+          if (state.packageDetailTab !== 'listing' || tabs.length === 0) {
+            holder.innerHTML = ''
+            return
+          }
+          var idx = parseInt(state.selectedTrackingTab, 10)
+          if (!isFinite(idx) || idx < 0 || idx >= tabs.length) state.selectedTrackingTab = '0'
+          var html = ''
+          tabs.forEach(function (label, i) {
+            html +=
+              '<button type="button" class="' +
+              (String(i) === state.selectedTrackingTab ? 'is-active' : '') +
+              '" data-idx="' +
+              i +
+              '">' +
+              escapeHtml(label) +
+              '</button>'
+          })
+          holder.innerHTML = '<div class="detail-sub-tabs">' + html + '</div>'
+          holder.querySelectorAll('button').forEach(function (b) {
+            b.onclick = function () {
+              state.selectedTrackingTab = b.getAttribute('data-idx')
+              renderSubTabs()
+            }
+          })
+        }
+
+        function openDetail(row, fromTab) {
+          state.selectedRow = row
+          state.detailFrom = fromTab
+          state.view = 'detail'
+          state.packageDetailTab = 'pickup'
+          state.selectedTrackingTab = '0'
+          document.getElementById('view-list').classList.add('hidden')
+          document.getElementById('view-detail').classList.remove('hidden')
+          renderDetail()
+        }
+
+        function renderDetail() {
+          setBreadcrumb()
+          var left = document.getElementById('detail-left')
+          var isKiosk = state.detailFrom === TAB_KIOSK
+
+          if (isKiosk) {
+            left.innerHTML = renderDetailLeftKiosk()
+            document.getElementById('detail-top-tabs').innerHTML = ''
+            document.getElementById('detail-sub-tabs-wrap').innerHTML = ''
+            document.getElementById('detail-top-tabs').style.display = 'none'
+            document.getElementById('detail-sub-tabs-wrap').style.display = 'none'
+          } else {
+            left.innerHTML = renderDetailLeftPackage()
+            document.getElementById('detail-top-tabs').style.display = ''
+            renderDetailTopTabs()
+            renderSubTabs()
+            var showSub =
+              state.packageDetailTab === 'listing' && packageTrackingTabs().length > 0
+            document.getElementById('detail-sub-tabs-wrap').style.display = showSub ? '' : 'none'
+          }
+          renderGrid('detail-grid')
+          wireDetailNav()
+        }
+
+        function backToList() {
+          state.view = 'list'
+          state.selectedRow = null
+          document.getElementById('view-detail').classList.add('hidden')
+          document.getElementById('view-list').classList.remove('hidden')
+          setBreadcrumb()
+        }
+
+        document.getElementById('btn-back').onclick = backToList
+
+        document.querySelectorAll('.tabs .tab').forEach(function (btn) {
+          btn.onclick = function () {
+            state.activeTab = btn.getAttribute('data-tab')
+            state.currentPage = 1
+            renderList()
+          }
+        })
+
+        document.getElementById('pf-submit').onclick = function () {
+          state.filters.package = {
+            caseId: document.getElementById('pf-case').value,
+            trackingNo: document.getElementById('pf-track').value,
+            from: document.getElementById('pf-date-from').value,
+            to: document.getElementById('pf-date-to').value,
+          }
+          state.currentPage = 1
+          renderList()
+        }
+        document.getElementById('pf-reset').onclick = function () {
+          document.getElementById('pf-case').value = ''
+          document.getElementById('pf-track').value = ''
+          document.getElementById('pf-date-from').value = ''
+          document.getElementById('pf-date-to').value = ''
+          state.filters.package = { caseId: '', trackingNo: '', from: '', to: '' }
+          state.currentPage = 1
+          renderList()
+        }
+
+        document.getElementById('kf-submit').onclick = function () {
+          state.filters.kiosk = {
+            store: document.getElementById('kf-store').value,
+            taskId: document.getElementById('kf-task').value,
+            vendor: document.getElementById('kf-vendor').value,
+            abnormal: document.getElementById('kf-abnormal').value,
+            from: document.getElementById('kf-date-from').value,
+            to: document.getElementById('kf-date-to').value,
+          }
+          state.currentPage = 1
+          renderList()
+        }
+        document.getElementById('kf-reset').onclick = function () {
+          document.getElementById('kf-store').value = ''
+          document.getElementById('kf-task').value = ''
+          document.getElementById('kf-vendor').value = ''
+          document.getElementById('kf-abnormal').value = ''
+          document.getElementById('kf-date-from').value = ''
+          document.getElementById('kf-date-to').value = ''
+          state.filters.kiosk = { store: '', taskId: '', vendor: '', abnormal: '', from: '', to: '' }
+          state.currentPage = 1
+          renderList()
+        }
+
+        document.getElementById('lf-submit').onclick = function () {
+          state.filters.live = {
+            trackingRaw: document.getElementById('lf-tracking').value,
+            from: document.getElementById('lf-date-from').value,
+            to: document.getElementById('lf-date-to').value,
+          }
+          state.currentPage = 1
+          renderList()
+        }
+        document.getElementById('lf-reset').onclick = function () {
+          document.getElementById('lf-tracking').value = ''
+          document.getElementById('lf-date-from').value = ''
+          document.getElementById('lf-date-to').value = ''
+          state.filters.live = { trackingRaw: '', from: '', to: '' }
+          state.currentPage = 1
+          renderList()
+        }
+
+        document.getElementById('page-prev').onclick = function () {
+          if (state.currentPage > 1) {
+            state.currentPage--
+            renderList()
+          }
+        }
+        document.getElementById('page-next').onclick = function () {
+          var total = currentFilteredRows().length
+          var maxPage = Math.max(1, Math.ceil(total / PAGE_SIZE))
+          if (state.currentPage < maxPage) {
+            state.currentPage++
+            renderList()
+          }
+        }
+
+        function liveTrackingSet() {
+          var s = {}
+          liveAllRows().forEach(function (r) {
+            var t = normalizeText(r['包裹配送編號'])
+            if (t) s[t] = 1
+          })
+          return s
+        }
+
+        function isValidTrackingNo(v) {
+          return /^TW[0-9A-Z]{6,24}$/i.test(normalizeText(v))
+        }
+
+        document.getElementById('btn-live-create').onclick = function () {
+          document.getElementById('modal-tracking').value = ''
+          document.getElementById('modal-dup-err').classList.add('hidden')
+          document.getElementById('modal-live').classList.remove('hidden')
+        }
+        document.getElementById('modal-cancel').onclick = function () {
+          document.getElementById('modal-live').classList.add('hidden')
+        }
+        document.getElementById('modal-ok').onclick = function () {
+          var trackingNo = normalizeText(document.getElementById('modal-tracking').value)
+          var err = document.getElementById('modal-dup-err')
+          err.classList.add('hidden')
+          if (!trackingNo) return
+          if (!isValidTrackingNo(trackingNo)) {
+            err.textContent = '包裹配送編號格式錯誤'
+            err.classList.remove('hidden')
+            return
+          }
+          if (liveTrackingSet()[trackingNo]) {
+            err.textContent = '包裹配送編號已存在'
+            err.classList.remove('hidden')
+            return
+          }
+          var now = new Date()
+          var pad = function (n) {
+            return String(n).padStart(2, '0')
+          }
+          var nowStr =
+            now.getFullYear() +
+            '-' +
+            pad(now.getMonth() + 1) +
+            '-' +
+            pad(now.getDate()) +
+            ' ' +
+            pad(now.getHours()) +
+            ':' +
+            pad(now.getMinutes()) +
+            ':' +
+            pad(now.getSeconds())
+          state.liveExtra.unshift({
+            key: 'live-extra-' + Date.now(),
+            包裹配送編號: trackingNo,
+            查詢建立時間: nowStr,
+            查詢者: 'vera.yang@shopee.tw',
+            備註: '',
+            影片處理狀況: '下載中',
+          })
+          document.getElementById('modal-live').classList.add('hidden')
+          state.currentPage = 1
+          renderList()
+        }
+
+        try {
+          state.packageTable = parseCsvText(readEmbeddedCsv('csv-package'))
+          state.packageDetail = parseCsvText(readEmbeddedCsv('csv-package-detail'))
+          state.kioskTable = parseCsvText(readEmbeddedCsv('csv-kiosk'))
+          state.liveTable = parseCsvText(readEmbeddedCsv('csv-live'))
+        } catch (e) {}
+        renderList()
+      })()
+    </script>
+  </body>
+</html>
