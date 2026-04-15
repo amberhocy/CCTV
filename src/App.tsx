@@ -18,7 +18,6 @@ import {
   Pagination,
   Row,
   Select,
-  Slider,
   Space,
   Spin,
   Table,
@@ -33,10 +32,6 @@ import {
   CopyOutlined,
   ExpandOutlined,
   DownloadOutlined,
-  PauseOutlined,
-  SoundOutlined,
-  AudioMutedOutlined,
-  CaretRightOutlined,
   DownOutlined,
   EyeOutlined,
   FolderOutlined,
@@ -98,49 +93,60 @@ function composeNoteWithMonitors(body: string, monitors: string[]): string {
 /** 包裹資訊：超過此筆數顯示分頁 */
 const PACKAGE_INFO_PAGE_SIZE = 5
 
-const packageVideoSampleModules = import.meta.glob(
-  '../data/demo/package/videoSample/*.{mp4,webm,mov,ogg}',
-  { eager: true, import: 'default' },
-) as Record<string, string>
+/** 包裹詳情監視器：YouTube 嵌入（順序對應九宮格第 1～N 格） */
+const PACKAGE_DETAIL_YOUTUBE_IDS = ['0Y66BM0ZDn0', 'vSy10j-rl94', 'ioY56QjQMEE'] as const
 
-/** 自 videoSample 檔名取得門市名稱（YYYYMMD、託運編後，第一個「_」前為門市段） */
-function storeNameFromVideoModulePath(modulePath: string): string {
-  const base = modulePath.split('/').pop()?.replace(/\.[^.]+$/i, '') ?? ''
-  const withoutPrefix = base.replace(/^\d{8}_[A-Z0-9]+_/i, '').trim()
-  const parts = withoutPrefix.split('_')
-  if (parts.length >= 2) {
-    return parts[0].trim()
-  }
-  return withoutPrefix || '門市'
+function youtubeWatchUrl(videoId: string): string {
+  return `https://www.youtube.com/watch?v=${videoId}`
 }
 
-const packageVideoSampleEntries = Object.entries(packageVideoSampleModules).sort(([a], [b]) =>
-  a.localeCompare(b, 'zh-Hant'),
-)
-const packageVideoSampleUrls = packageVideoSampleEntries.map(([, url]) => url)
+function youtubeEmbedUrl(videoId: string): string {
+  return `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1`
+}
 
-/** 九宮格索引是否有對應之示意監視器（與 videoSample 檔數一致） */
+/** 九宮格索引是否有對應監視器（與上方 YouTube 清單長度一致） */
 function hasPackageMonitorSlot(idx: number): boolean {
-  return idx >= 0 && idx < packageVideoSampleUrls.length
+  return idx >= 0 && idx < PACKAGE_DETAIL_YOUTUBE_IDS.length
 }
 
-/** 鏡頭顯示：門市名稱 + 編號 001、002…（依排序後的檔案順序） */
-const packageVideoSampleMonitorNames = packageVideoSampleEntries.map(([path], index) => {
-  const store = storeNameFromVideoModulePath(path)
+const packageVideoSampleMonitorNames = PACKAGE_DETAIL_YOUTUBE_IDS.map((_, index) => {
   const num = String(index + 1).padStart(3, '0')
-  return `${store}${num}`
+  return `監視器${num}`
 })
 
-function packageVideoSampleDownloadFilename(index: number): string {
-  const path = packageVideoSampleEntries[index]?.[0] ?? ''
-  return path.split('/').pop() ?? `monitor-${index + 1}.mp4`
-}
-
-/** 監視器鏡頭複選：僅列出有影片之鏡位（與 videoSample 檔名解析名稱一致） */
+/** 監視器鏡頭複選：僅列出有影片之鏡位 */
 const MONITOR_LENS_SELECT_OPTIONS = packageVideoSampleMonitorNames.map((label) => ({
   label,
   value: label,
 }))
+
+function PackageYoutubeEmbed({
+  monitorIndex,
+  variant,
+}: {
+  monitorIndex: number
+  variant: 'grid' | 'single' | 'modal'
+}) {
+  if (!hasPackageMonitorSlot(monitorIndex)) return null
+  const id = PACKAGE_DETAIL_YOUTUBE_IDS[monitorIndex]
+  const title = packageVideoSampleMonitorNames[monitorIndex] ?? `監視器 ${monitorIndex + 1}`
+  const className =
+    variant === 'modal'
+      ? 'detail-youtube-embed detail-youtube-embed--modal'
+      : variant === 'single'
+        ? 'detail-youtube-embed detail-youtube-embed--single'
+        : 'detail-youtube-embed detail-youtube-embed--grid'
+  return (
+    <iframe
+      className={className}
+      src={youtubeEmbedUrl(id)}
+      title={title}
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowFullScreen
+      loading={variant === 'grid' ? 'lazy' : 'eager'}
+    />
+  )
+}
 
 type CsvColumn = { key: string; title: string }
 type CsvTableRow = { key: string } & Record<string, string>
@@ -346,16 +352,8 @@ function App() {
   ])
   // kiosk 影片 modal 已不再使用（改為「查看」導詳情頁）
   const [isGridPlayerZoomOpen, setIsGridPlayerZoomOpen] = useState(false)
-  const gridVideoRefs = useRef<Array<HTMLVideoElement | null>>([])
-  const [gridAllMuted, setGridAllMuted] = useState(true)
-  const [gridAllPlaying, setGridAllPlaying] = useState(true)
-  const [gridPlaybackRate, setGridPlaybackRate] = useState<number>(1)
   const [gridViewMode, setGridViewMode] = useState<'grid' | 'single'>('grid')
   const [gridActiveIdx, setGridActiveIdx] = useState<number>(0)
-  /** 索引對應之 mp4 無法解碼／載入失敗時改顯示「影片示意」 */
-  const [gridVideoLoadFailed, setGridVideoLoadFailed] = useState<Record<number, boolean>>({})
-  const [gridTime, setGridTime] = useState<{ current: number; duration: number }>({ current: 0, duration: 0 })
-  const isSeekingRef = useRef(false)
   const pageSize = 20
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -555,69 +553,14 @@ function App() {
     }
   }, [view])
 
-  const applyGridMuted = (muted: boolean) => {
-    setGridAllMuted(muted)
-    gridVideoRefs.current.forEach((v) => {
-      if (!v) return
-      v.muted = muted
-    })
-  }
-
-  const playAllGridVideos = async () => {
-    const list = gridVideoRefs.current.filter(Boolean) as HTMLVideoElement[]
-    if (list.length === 0) {
-      message.info('目前無可播放的監視器影片')
-      setGridAllPlaying(false)
-      return
-    }
-    const results = await Promise.allSettled(list.map((v) => v.play()))
-    const ok = results.some((r) => r.status === 'fulfilled')
-    if (!ok) {
-      message.warning('瀏覽器限制自動播放，請先點任一畫面')
-      setGridAllPlaying(false)
-      return
-    }
-    setGridAllPlaying(true)
-  }
-
-  const pauseAllGridVideos = () => {
-    gridVideoRefs.current.forEach((v) => v?.pause())
-    setGridAllPlaying(false)
-  }
-
-  const syncAllGridVideos = () => {
-    const list = gridVideoRefs.current.filter(Boolean) as HTMLVideoElement[]
-    if (list.length === 0) return
-    const t = list[0].currentTime
-    list.forEach((v) => {
-      try {
-        v.currentTime = t
-      } catch {
-        // ignore
-      }
-    })
-    message.success('已同步九宮格播放時間')
-  }
-
   const downloadGridVideoByMonitorIndex = async (monitorIdx: number) => {
-    if (!hasPackageMonitorSlot(monitorIdx) || gridVideoLoadFailed[monitorIdx]) {
-      message.warning('此監視器無可下載之影片檔')
+    if (!hasPackageMonitorSlot(monitorIdx)) {
+      message.warning('此監視器無影片')
       return
     }
-    const url = packageVideoSampleUrls[monitorIdx]
-    const name = packageVideoSampleDownloadFilename(monitorIdx)
-    try {
-      const a = document.createElement('a')
-      a.href = url
-      a.download = name
-      a.rel = 'noopener'
-      a.target = '_blank'
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-    } catch {
-      message.error('無法開始下載')
-    }
+    const id = PACKAGE_DETAIL_YOUTUBE_IDS[monitorIdx]
+    window.open(youtubeWatchUrl(id), '_blank', 'noopener,noreferrer')
+    message.info('已在新分頁開啟 YouTube')
   }
 
   const downloadMonitorMenuItems = useMemo(
@@ -627,81 +570,6 @@ function App() {
         .filter((_, idx) => hasPackageMonitorSlot(idx)),
     [],
   )
-
-  const applyGridPlaybackRate = (rate: number) => {
-    setGridPlaybackRate(rate)
-    gridVideoRefs.current.forEach((v) => {
-      if (!v) return
-      v.playbackRate = rate
-    })
-  }
-
-  useEffect(() => {
-    // 追蹤 active video 的時間顯示（作為底部控制列的時間/進度來源）
-    let raf = 0
-    const tick = () => {
-      const v = gridVideoRefs.current[gridActiveIdx]
-      if (v && !isSeekingRef.current) {
-        const duration = Number.isFinite(v.duration) ? v.duration : 0
-        setGridTime({ current: v.currentTime || 0, duration })
-      }
-      raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [gridActiveIdx])
-
-  const formatTime = (sec: number) => {
-    const s = Math.max(0, Math.floor(sec))
-    const mm = String(Math.floor(s / 60)).padStart(2, '0')
-    const ss = String(s % 60).padStart(2, '0')
-    return `${mm}:${ss}`
-  }
-
-  const renderPackageMonitorVideo = useCallback(
-    (idx: number, variant: 'grid' | 'single') => {
-      if (!hasPackageMonitorSlot(idx)) return null
-      if (gridVideoLoadFailed[idx]) {
-        return (
-          <div
-            className={
-              variant === 'single'
-                ? 'detail-video-schematic detail-video-schematic--single'
-                : 'detail-video-schematic'
-            }
-          >
-            <span className="detail-video-schematic-text">影片示意</span>
-          </div>
-        )
-      }
-      const videoClass =
-        variant === 'single' ? 'detail-video detail-video--contain' : 'detail-video'
-      return (
-        <video
-          key={packageVideoSampleUrls[idx]}
-          ref={(el) => {
-            gridVideoRefs.current[idx] = el
-          }}
-          className={videoClass}
-          src={packageVideoSampleUrls[idx]}
-          muted={gridAllMuted}
-          playsInline
-          loop
-          preload="auto"
-          onError={() => {
-            setGridVideoLoadFailed((prev) => ({ ...prev, [idx]: true }))
-          }}
-        />
-      )
-    },
-    [gridVideoLoadFailed, gridAllMuted],
-  )
-
-  useEffect(() => {
-    if (!isGridPlayerZoomOpen) return
-    gridVideoRefs.current.forEach((v) => v?.pause())
-    setGridAllPlaying(false)
-  }, [isGridPlayerZoomOpen])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -1490,16 +1358,8 @@ function App() {
             destroyOnClose
             width={1100}
           >
-            {hasPackageMonitorSlot(gridActiveIdx) && !gridVideoLoadFailed[gridActiveIdx] ? (
-              <video
-                className="detail-video detail-video--contain"
-                style={{ width: '100%', maxHeight: 'min(70vh, 720px)', display: 'block' }}
-                src={packageVideoSampleUrls[gridActiveIdx]}
-                controls
-                playsInline
-                muted={gridAllMuted}
-                autoPlay
-              />
+            {hasPackageMonitorSlot(gridActiveIdx) ? (
+              <PackageYoutubeEmbed monitorIndex={gridActiveIdx} variant="modal" />
             ) : (
               <div className="detail-video-schematic detail-video-schematic--modal">
                 <span className="detail-video-schematic-text">影片示意</span>
@@ -1759,7 +1619,7 @@ function App() {
                                 {packageVideoSampleMonitorNames[gridActiveIdx] ??
                                   `監視器 ${gridActiveIdx + 1}`}
                               </Tag>
-                              {renderPackageMonitorVideo(gridActiveIdx, 'single')}
+                              <PackageYoutubeEmbed monitorIndex={gridActiveIdx} variant="single" />
                             </>
                           ) : (
                             <div className="detail-media-placeholder">尚無監視器</div>
@@ -1792,7 +1652,7 @@ function App() {
                                   </Tag>
                                 ) : null}
                                 {hasSlot ? (
-                                  renderPackageMonitorVideo(idx, 'grid')
+                                  <PackageYoutubeEmbed monitorIndex={idx} variant="grid" />
                                 ) : (
                                   <div className="detail-media-placeholder">尚無監視器</div>
                                 )}
@@ -1802,81 +1662,13 @@ function App() {
                         </div>
                       )}
 
-                      <div className="detail-grid-playerbar">
-                    <div className="gridbar-left">
-                      <Tooltip title={gridAllPlaying ? '暫停全部' : '播放全部'}>
-                        <Button
-                          type="text"
-                          className="gridbar-icon-btn"
-                          icon={gridAllPlaying ? <PauseOutlined /> : <CaretRightOutlined />}
-                          onClick={() => {
-                            if (gridAllPlaying) pauseAllGridVideos()
-                            else void playAllGridVideos()
-                          }}
-                        />
-                      </Tooltip>
-
-                      <Dropdown
-                        trigger={['click']}
-                        menu={{
-                          items: [0.5, 1, 1.5, 2].map((rate) => ({
-                            key: String(rate),
-                            label: `${rate}x`,
-                            onClick: () => applyGridPlaybackRate(rate),
-                          })),
-                        }}
-                      >
-                        <Button type="text" className="gridbar-pill">
-                          x{gridPlaybackRate} <DownOutlined />
-                        </Button>
-                      </Dropdown>
-
-                      <Typography.Text className="gridbar-time">
-                        {formatTime(gridTime.current)}/{formatTime(gridTime.duration)}
-                      </Typography.Text>
-                    </div>
-
-                    <div className="gridbar-center">
-                      <Slider
-                        min={0}
-                        max={Math.max(0, Math.floor(gridTime.duration))}
-                        value={Math.min(Math.max(0, gridTime.current), gridTime.duration || 0)}
-                        tooltip={{ formatter: null }}
-                        onChange={(v) => {
-                          isSeekingRef.current = true
-                          setGridTime((prev) => ({ ...prev, current: Number(v) }))
-                        }}
-                        onChangeComplete={(v) => {
-                          const t = Number(v)
-                          isSeekingRef.current = false
-                          gridVideoRefs.current.forEach((video) => {
-                            if (!video) return
-                            try {
-                              video.currentTime = t
-                            } catch {
-                              // ignore
-                            }
-                          })
-                        }}
-                      />
-                    </div>
+                      <div className="detail-grid-playerbar detail-grid-playerbar--youtube">
+                    <Typography.Text type="secondary" className="gridbar-youtube-hint">
+                      監視器為 YouTube 嵌入：九宮格點格可切換選取，請至單片或放大後使用播放器；或選擇「開啟
+                      YouTube」於新分頁觀看。
+                    </Typography.Text>
 
                     <div className="gridbar-right">
-                      <Tooltip title={gridAllMuted ? '取消靜音' : '全部靜音'}>
-                        <Button
-                          type="text"
-                          className="gridbar-icon-btn"
-                          icon={gridAllMuted ? <AudioMutedOutlined /> : <SoundOutlined />}
-                          onClick={() => applyGridMuted(!gridAllMuted)}
-                        />
-                      </Tooltip>
-
-                      <Tooltip title="同步">
-                        <Button type="text" className="gridbar-pill" onClick={syncAllGridVideos}>
-                          同步
-                        </Button>
-                      </Tooltip>
-
                       <Dropdown
                         trigger={['click']}
                         disabled={downloadMonitorMenuItems.length === 0}
@@ -1887,7 +1679,7 @@ function App() {
                           },
                         }}
                       >
-                        <Tooltip title="下載（選擇監視器）">
+                        <Tooltip title="於 YouTube 開啟（選擇監視器）">
                           <Button
                             type="text"
                             className="gridbar-icon-btn"
