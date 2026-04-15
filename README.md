@@ -38,4 +38,5 @@ npm run build
 
 ## 大型影片
 
-`*.mp4` 以 **Git LFS** 追蹤（見 `.gitattributes`）。clone 後請執行：`git lfs install`。
+- 倉庫內 `*.mp4`（`data/demo/.../videoSample`）以 **Git LFS** 追蹤（見 `.gitattributes`）。clone 後請執行：`git lfs install`。
+- **詳情頁監視器九宮格**：目前以 **黑色底 +「影片示意」** 呈現嵌入區，不播放實際串流；鏡位標籤仍依 `videoSample` 檔名規則產生。

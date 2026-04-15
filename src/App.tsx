@@ -118,6 +118,12 @@ const packageVideoSampleEntries = Object.entries(packageVideoSampleModules).sort
   a.localeCompare(b, 'zh-Hant'),
 )
 const packageVideoSampleUrls = packageVideoSampleEntries.map(([, url]) => url)
+
+/** 九宮格索引是否有對應之示意監視器（與 videoSample 檔數一致） */
+function hasPackageMonitorSlot(idx: number): boolean {
+  return idx >= 0 && idx < packageVideoSampleUrls.length
+}
+
 /** 鏡頭顯示：門市名稱 + 編號 001、002…（依排序後的檔案順序） */
 const packageVideoSampleMonitorNames = packageVideoSampleEntries.map(([path], index) => {
   const store = storeNameFromVideoModulePath(path)
@@ -125,39 +131,16 @@ const packageVideoSampleMonitorNames = packageVideoSampleEntries.map(([path], in
   return `${store}${num}`
 })
 
+function packageVideoSampleDownloadFilename(index: number): string {
+  const path = packageVideoSampleEntries[index]?.[0] ?? ''
+  return path.split('/').pop() ?? `monitor-${index + 1}.mp4`
+}
+
 /** 監視器鏡頭複選：僅列出有影片之鏡位（與 videoSample 檔名解析名稱一致） */
 const MONITOR_LENS_SELECT_OPTIONS = packageVideoSampleMonitorNames.map((label) => ({
   label,
   value: label,
 }))
-
-function formatYmdCompact(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}${m}${day}`
-}
-
-/** 自 videoSample 原始檔名前綴取 YYYYMMDD；無則用本機今日 */
-function ymdPrefixFromVideoEntryIndex(idx: number): string {
-  const entry = packageVideoSampleEntries[idx]
-  if (!entry) return formatYmdCompact(new Date())
-  const fileBase = entry[0].split('/').pop()?.replace(/\.[^.]+$/i, '') ?? ''
-  const m = fileBase.match(/^(\d{8})_/)
-  return m?.[1] ?? formatYmdCompact(new Date())
-}
-
-/** 下載檔名用門市字串：由「門市名稱001」去掉末三位編號後去空白 */
-function storeNameCompactFromMonitorIndex(idx: number): string {
-  const label = packageVideoSampleMonitorNames[idx]
-  if (!label) return ''
-  const withoutNum = label.replace(/\d{3}$/, '').trim()
-  return withoutNum.replace(/\s+/g, '')
-}
-
-function sanitizeVideoDownloadBasename(s: string): string {
-  return s.replace(/[<>:"/\\|?*\x00-\x1f]/g, '_').slice(0, 200)
-}
 
 type CsvColumn = { key: string; title: string }
 type CsvTableRow = { key: string } & Record<string, string>
@@ -362,7 +345,6 @@ function App() {
     'note',
   ])
   // kiosk 影片 modal 已不再使用（改為「查看」導詳情頁）
-  const [gridPlayerUrl, setGridPlayerUrl] = useState<string | null>(null)
   const [isGridPlayerZoomOpen, setIsGridPlayerZoomOpen] = useState(false)
   const gridVideoRefs = useRef<Array<HTMLVideoElement | null>>([])
   const [gridAllMuted, setGridAllMuted] = useState(true)
@@ -370,6 +352,8 @@ function App() {
   const [gridPlaybackRate, setGridPlaybackRate] = useState<number>(1)
   const [gridViewMode, setGridViewMode] = useState<'grid' | 'single'>('grid')
   const [gridActiveIdx, setGridActiveIdx] = useState<number>(0)
+  /** 索引對應之 mp4 無法解碼／載入失敗時改顯示「影片示意」 */
+  const [gridVideoLoadFailed, setGridVideoLoadFailed] = useState<Record<number, boolean>>({})
   const [gridTime, setGridTime] = useState<{ current: number; duration: number }>({ current: 0, duration: 0 })
   const isSeekingRef = useRef(false)
   const pageSize = 20
@@ -508,6 +492,23 @@ function App() {
     )
   }, [])
 
+  /** 側邊欄「SPX 案件排查中心」：回到列表首頁（包裹案件）並清除篩選與瀏覽器歷史狀態 */
+  const goSpxHome = useCallback(() => {
+    setView('list')
+    setSelectedPackageRow(null)
+    setDetailFromTab(TAB_PACKAGE)
+    setActiveTab(TAB_PACKAGE)
+    packageForm.resetFields()
+    setPackageFilters({})
+    kioskForm.resetFields()
+    setKioskFilters({})
+    liveForm.resetFields()
+    setLiveFilters({})
+    setCurrentPage(1)
+    window.history.replaceState(null, '', window.location.href)
+    if (isNarrow) setCollapsed(true)
+  }, [isNarrow, kioskForm, liveForm, packageForm])
+
   useEffect(() => {
     const onPopState = (e: PopStateEvent) => {
       const s = e.state as { appView?: string; detailFrom?: string; rowKey?: string } | null
@@ -547,9 +548,8 @@ function App() {
   }, [activeTab, kioskForm, liveForm, packageForm])
 
   useEffect(() => {
-    // 離開詳情頁時，停止右側播放器
+    // 離開詳情頁時，關閉放大
     if (view !== 'packageDetail') {
-      setGridPlayerUrl(null)
       setIsGridPlayerZoomOpen(false)
       setGridViewMode('grid')
     }
@@ -565,6 +565,11 @@ function App() {
 
   const playAllGridVideos = async () => {
     const list = gridVideoRefs.current.filter(Boolean) as HTMLVideoElement[]
+    if (list.length === 0) {
+      message.info('目前無可播放的監視器影片')
+      setGridAllPlaying(false)
+      return
+    }
     const results = await Promise.allSettled(list.map((v) => v.play()))
     const ok = results.some((r) => r.status === 'fulfilled')
     if (!ok) {
@@ -594,65 +599,32 @@ function App() {
     message.success('已同步九宮格播放時間')
   }
 
-  const requestVideoFullscreen = async (video: HTMLVideoElement | null) => {
-    if (!video) return false
-    try {
-      const anyVideo = video as any
-      if (typeof video.requestFullscreen === 'function') {
-        await video.requestFullscreen()
-        return true
-      }
-      if (typeof anyVideo.webkitRequestFullscreen === 'function') {
-        anyVideo.webkitRequestFullscreen()
-        return true
-      }
-      if (typeof anyVideo.msRequestFullscreen === 'function') {
-        anyVideo.msRequestFullscreen()
-        return true
-      }
-      return false
-    } catch {
-      return false
-    }
-  }
-
   const downloadGridVideoByMonitorIndex = async (monitorIdx: number) => {
-    const url = packageVideoSampleUrls[monitorIdx]
-    if (!url) {
-      message.warning('尚無可下載的影片')
+    if (!hasPackageMonitorSlot(monitorIdx) || gridVideoLoadFailed[monitorIdx]) {
+      message.warning('此監視器無可下載之影片檔')
       return
     }
+    const url = packageVideoSampleUrls[monitorIdx]
+    const name = packageVideoSampleDownloadFilename(monitorIdx)
     try {
-      const res = await fetch(url)
-      if (!res.ok) throw new Error(String(res.status))
-      const blob = await res.blob()
-      const ext = url.includes('.webm') ? 'webm' : url.includes('.mov') ? 'mov' : 'mp4'
-      const tracking =
-        normalizeText(selectedPackageRow?.['包裹配送編號']) ||
-        normalizeText(selectedPackageRow?.['任務編號']) ||
-        'unknown'
-      const ymd = ymdPrefixFromVideoEntryIndex(monitorIdx)
-      const store = storeNameCompactFromMonitorIndex(monitorIdx)
-      const base = `${ymd}_${tracking}${store}`
-      const name = `${sanitizeVideoDownloadBasename(base)}.${ext}`
       const a = document.createElement('a')
-      a.href = URL.createObjectURL(blob)
+      a.href = url
       a.download = name
       a.rel = 'noopener'
+      a.target = '_blank'
+      document.body.appendChild(a)
       a.click()
-      URL.revokeObjectURL(a.href)
-      message.success('下載已開始')
+      a.remove()
     } catch {
-      message.error('下載失敗')
+      message.error('無法開始下載')
     }
   }
 
   const downloadMonitorMenuItems = useMemo(
     () =>
-      packageVideoSampleUrls.map((_, idx) => ({
-        key: String(idx),
-        label: packageVideoSampleMonitorNames[idx] ?? `監視器 ${idx + 1}`,
-      })),
+      packageVideoSampleMonitorNames
+        .map((label, idx) => ({ key: String(idx), label }))
+        .filter((_, idx) => hasPackageMonitorSlot(idx)),
     [],
   )
 
@@ -685,6 +657,51 @@ function App() {
     const ss = String(s % 60).padStart(2, '0')
     return `${mm}:${ss}`
   }
+
+  const renderPackageMonitorVideo = useCallback(
+    (idx: number, variant: 'grid' | 'single') => {
+      if (!hasPackageMonitorSlot(idx)) return null
+      if (gridVideoLoadFailed[idx]) {
+        return (
+          <div
+            className={
+              variant === 'single'
+                ? 'detail-video-schematic detail-video-schematic--single'
+                : 'detail-video-schematic'
+            }
+          >
+            <span className="detail-video-schematic-text">影片示意</span>
+          </div>
+        )
+      }
+      const videoClass =
+        variant === 'single' ? 'detail-video detail-video--contain' : 'detail-video'
+      return (
+        <video
+          key={packageVideoSampleUrls[idx]}
+          ref={(el) => {
+            gridVideoRefs.current[idx] = el
+          }}
+          className={videoClass}
+          src={packageVideoSampleUrls[idx]}
+          muted={gridAllMuted}
+          playsInline
+          loop
+          preload="auto"
+          onError={() => {
+            setGridVideoLoadFailed((prev) => ({ ...prev, [idx]: true }))
+          }}
+        />
+      )
+    },
+    [gridVideoLoadFailed, gridAllMuted],
+  )
+
+  useEffect(() => {
+    if (!isGridPlayerZoomOpen) return
+    gridVideoRefs.current.forEach((v) => v?.pause())
+    setGridAllPlaying(false)
+  }, [isGridPlayerZoomOpen])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -1188,7 +1205,6 @@ function App() {
     setSelectedPackageRow(row)
     setGridViewMode('grid')
     setGridActiveIdx(0)
-    setGridPlayerUrl(null)
     setIsGridPlayerZoomOpen(false)
     setPackageInfoPage(1)
     setSelectedListingTrackingNo('')
@@ -1326,8 +1342,11 @@ function App() {
         >
           <Menu
             mode="inline"
-            defaultSelectedKeys={['spx']}
+            selectedKeys={['spx']}
             className="sider-menu"
+            onClick={({ key }) => {
+              if (key === 'spx') goSpxHome()
+            }}
             items={[
               {
                 key: 'home',
@@ -1471,16 +1490,20 @@ function App() {
             destroyOnClose
             width={1100}
           >
-            {gridPlayerUrl ? (
+            {hasPackageMonitorSlot(gridActiveIdx) && !gridVideoLoadFailed[gridActiveIdx] ? (
               <video
-                src={gridPlayerUrl}
+                className="detail-video detail-video--contain"
+                style={{ width: '100%', maxHeight: 'min(70vh, 720px)', display: 'block' }}
+                src={packageVideoSampleUrls[gridActiveIdx]}
                 controls
-                autoPlay
                 playsInline
-                style={{ width: '100%', height: 'auto', display: 'block' }}
+                muted={gridAllMuted}
+                autoPlay
               />
             ) : (
-              <div className="detail-media-placeholder">尚無影像</div>
+              <div className="detail-video-schematic detail-video-schematic--modal">
+                <span className="detail-video-schematic-text">影片示意</span>
+              </div>
             )}
           </Modal>
           <div className="breadcrumb-bar">
@@ -1496,23 +1519,6 @@ function App() {
                   {pageDesc}
                 </Typography.Paragraph>
               </div>
-              {activeTab === TAB_LIVE ? (
-                <div className="page-head-toolbar">
-                  <Space wrap>
-                    <Button
-                      type="primary"
-                      onClick={() => {
-                        setLiveCreateDuplicate(null)
-                        liveCreateForm.resetFields()
-                        setIsLiveCreateOpen(true)
-                      }}
-                    >
-                      新增查詢
-                    </Button>
-                    <Button className="btn-batch-query">批次新增查詢</Button>
-                  </Space>
-                </div>
-              ) : null}
             </div>
           ) : null}
 
@@ -1744,7 +1750,7 @@ function App() {
                           >
                             返回
                           </Button>
-                          {packageVideoSampleUrls[gridActiveIdx] ? (
+                          {hasPackageMonitorSlot(gridActiveIdx) ? (
                             <>
                               <Tag
                                 bordered={false}
@@ -1753,23 +1759,7 @@ function App() {
                                 {packageVideoSampleMonitorNames[gridActiveIdx] ??
                                   `監視器 ${gridActiveIdx + 1}`}
                               </Tag>
-                              <video
-                                className="detail-video detail-video--contain"
-                                src={packageVideoSampleUrls[gridActiveIdx]}
-                                ref={(el) => {
-                                  gridVideoRefs.current[gridActiveIdx] = el
-                                  if (el) {
-                                    el.muted = gridAllMuted
-                                    el.playbackRate = gridPlaybackRate
-                                  }
-                                }}
-                                autoPlay
-                                muted={gridAllMuted}
-                                loop
-                                playsInline
-                                preload="metadata"
-                                controls={false}
-                              />
+                              {renderPackageMonitorVideo(gridActiveIdx, 'single')}
                             </>
                           ) : (
                             <div className="detail-media-placeholder">尚無監視器</div>
@@ -1778,11 +1768,10 @@ function App() {
                       ) : (
                         <div className="detail-media-grid detail-media-grid--v2">
                           {Array.from({ length: 9 }).map((_, idx) => {
-                            const url = packageVideoSampleUrls[idx]
-                            const monitorName =
-                              url != null
-                                ? packageVideoSampleMonitorNames[idx] ?? `監視器 ${idx + 1}`
-                                : null
+                            const hasSlot = hasPackageMonitorSlot(idx)
+                            const monitorName = hasSlot
+                              ? packageVideoSampleMonitorNames[idx] ?? `監視器 ${idx + 1}`
+                              : null
                             const isActive = idx === gridActiveIdx
                             return (
                               <div
@@ -1793,8 +1782,7 @@ function App() {
                                   setGridViewMode('single')
                                 }}
                                 onDoubleClick={() => {
-                                  if (!url) return
-                                  setGridPlayerUrl(url)
+                                  if (!hasSlot) return
                                   setIsGridPlayerZoomOpen(true)
                                 }}
                               >
@@ -1803,24 +1791,8 @@ function App() {
                                     {monitorName}
                                   </Tag>
                                 ) : null}
-                                {url ? (
-                                  <video
-                                    className="detail-video"
-                                    src={url}
-                                    ref={(el) => {
-                                      gridVideoRefs.current[idx] = el
-                                      if (el) {
-                                        el.muted = gridAllMuted
-                                        el.playbackRate = gridPlaybackRate
-                                      }
-                                    }}
-                                    autoPlay
-                                    muted={gridAllMuted}
-                                    loop
-                                    playsInline
-                                    preload="metadata"
-                                    controls={false}
-                                  />
+                                {hasSlot ? (
+                                  renderPackageMonitorVideo(idx, 'grid')
                                 ) : (
                                   <div className="detail-media-placeholder">尚無監視器</div>
                                 )}
@@ -1930,13 +1902,8 @@ function App() {
                           type="text"
                           className="gridbar-icon-btn"
                           icon={<ExpandOutlined />}
-                          onClick={async () => {
-                            const url = packageVideoSampleUrls[gridActiveIdx]
-                            if (!url) return
-                            const ok = await requestVideoFullscreen(gridVideoRefs.current[gridActiveIdx] ?? null)
-                            if (ok) return
-                            // fallback: use modal
-                            setGridPlayerUrl(url)
+                          onClick={() => {
+                            if (!hasPackageMonitorSlot(gridActiveIdx)) return
                             setIsGridPlayerZoomOpen(true)
                           }}
                         />
@@ -2022,7 +1989,7 @@ function App() {
                         className="filter-actions filter-item filter-actions-item"
                       >
                         <Space wrap={false} size={8} className="filter-search-actions">
-                          <Button type="primary" htmlType="submit">
+                          <Button type="default" className="filter-submit-btn" htmlType="submit">
                             搜尋
                           </Button>
                           <Button
@@ -2151,7 +2118,7 @@ function App() {
                         className="filter-actions filter-item filter-actions-item"
                       >
                         <Space wrap={false} size={8} className="filter-search-actions">
-                          <Button type="primary" htmlType="submit">
+                          <Button type="default" className="filter-submit-btn" htmlType="submit">
                             搜尋
                           </Button>
                           <Button
@@ -2243,7 +2210,7 @@ function App() {
                         className="filter-actions filter-item filter-actions-item"
                       >
                         <Space wrap={false} size={8} className="filter-search-actions">
-                          <Button type="primary" htmlType="submit">
+                          <Button type="default" className="filter-submit-btn" htmlType="submit">
                             搜尋
                           </Button>
                           <Button
@@ -2262,13 +2229,29 @@ function App() {
                   </Row>
                 </Form>
 
+                <div className="live-query-actions-strip" aria-label="即時查詢操作">
+                  <Space wrap>
+                    <Button
+                      type="primary"
+                      onClick={() => {
+                        setLiveCreateDuplicate(null)
+                        liveCreateForm.resetFields()
+                        setIsLiveCreateOpen(true)
+                      }}
+                    >
+                      新增查詢
+                    </Button>
+                    <Button className="btn-batch-query">批次新增查詢</Button>
+                  </Space>
+                </div>
+
                 {filteredLiveRows.length === 0 ? (
                   <div className="empty-state">
                     <Empty
                       image={Empty.PRESENTED_IMAGE_SIMPLE}
                       description={
                         <span>
-                          尚無資料，請至右上方{' '}
+                          尚無資料，請點選搜尋區與列表之間的{' '}
                           <Typography.Link
                             onClick={() => {
                               setLiveCreateDuplicate(null)

@@ -318,12 +318,11 @@
   color: var(--twtc-color-text-tertiary);
 }
 
-/* 即時查詢：標題列與右上操作（與標題+副標垂直置中對齊） */
+/* 即時查詢：標題列（操作鈕已移至篩選區下方） */
 .page-head--live {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: 12px 16px;
 }
 
@@ -737,10 +736,54 @@
   display: block;
 }
 
+/* 讓點擊穿透至外層格，以切換選取／單片模式（video 無內建控制列） */
+.detail-media-tile .detail-video,
+.detail-media-single .detail-video {
+  pointer-events: none;
+}
+
 /* 單片模式：維持原比例（不裁切） */
 .detail-video.detail-video--contain {
   object-fit: contain;
   background: #000;
+}
+
+/* 監視器畫面：黑色底「影片示意」 */
+.detail-video-schematic {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  box-sizing: border-box;
+}
+
+.detail-video-schematic-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.06em;
+  user-select: none;
+}
+
+.detail-video-schematic--single {
+  position: absolute;
+  inset: 0;
+}
+
+.detail-media-single > .detail-video.detail-video--contain {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.detail-video-schematic--modal {
+  min-height: 480px;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--twtc-radius-sm, 4px);
 }
 
 .detail-grid-playerbar {
@@ -879,11 +922,21 @@
   color: rgba(0, 0, 0, 0.88);
 }
 
-.filter-search-actions .ant-btn-primary {
+/* 搜尋：白底邊框鈕（與重置同高，對齊篩選列） */
+.filter-submit-btn.ant-btn {
   height: 32px;
   padding: 4px 15px;
   font-size: 14px;
   line-height: 1.5715;
+  color: rgba(0, 0, 0, 0.88);
+  background: #fff !important;
+  border-color: #d9d9d9;
+}
+
+.filter-submit-btn.ant-btn:hover {
+  color: rgba(0, 0, 0, 0.88);
+  background: #fff !important;
+  border-color: var(--twtc-color-primary, #ff4d2e);
 }
 
 .filter-fill-bar .filter-fill-col .ant-input,
@@ -902,6 +955,19 @@
 
 .filter-fill-bar .filter-fill-col textarea.ant-input {
   width: 100%;
+}
+
+/* 即時查詢：搜尋區與表格之間的透明帶，按鈕靠右 */
+.live-query-actions-strip {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  margin: 0 0 16px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 .filter-bar .filter-item {
