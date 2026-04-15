@@ -1,73 +1,41 @@
-# React + TypeScript + Vite
+# CCTV MVP
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript + Vite 前端；demo 資料以 **CSV + 影片** 驅動，路徑僅使用 **ASCII 目錄名**（`data/demo/...`），避免跨平台（Windows / macOS / Linux）與 CI 路徑問題。
 
-Currently, two official plugins are available:
+## 專案結構
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+CCTV_MVP/
+├── .github/workflows/     # GitHub Actions（含 Pages 部署）
+├── data/demo/             # Demo 資料：包裹 / 繳費機 / 即時查詢（CSV + videoSample）
+│   ├── package/
+│   ├── kiosk/
+│   └── live/
+├── docs/                  # 說明文件（如 install.zh-Hant.txt）
+├── public/                # 靜態資源（favicon 等）
+├── src/                   # React 應用程式
+├── demo.html              # 單檔離線 demo（內嵌資源）
+├── interactive.html       # 互動示範頁（相對路徑讀取 data/demo）
+├── index.html             # Vite 入口
+├── package.json
+└── vite.config.ts
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 本機開發
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
+
+## 建置
+
+```bash
+npm run build
+```
+
+子路徑部署（例如 GitHub Pages）請在建置前設定 `VITE_BASE`，例如：`VITE_BASE=/CCTV/ npm run build`。
+
+## 大型影片
+
+`*.mp4` 以 **Git LFS** 追蹤（見 `.gitattributes`）。clone 後請執行：`git lfs install`。

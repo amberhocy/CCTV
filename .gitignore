@@ -1,3 +1,11 @@
+# Dependencies
+node_modules
+
+# Build
+dist
+dist-ssr
+*.local
+
 # Logs
 logs
 *.log
@@ -7,18 +15,54 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Environment (secrets — never commit)
+.env
+.env.*
+!.env.example
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# TypeScript / tooling caches
+*.tsbuildinfo
+.tscache
+.eslintcache
+*.swp
+*.swo
+
+# Test / coverage
+coverage
+.nyc_output
+
+# OS — macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# OS — Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# OS — Linux
+*~
+.directory
+
+# Editors / IDEs
+.idea
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+.vscode/*
+!.vscode/extensions.json
+
+# Optional local tools
+*.pem
+.cache/
+.temp/
+tmp/
+temp/

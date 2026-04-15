@@ -99,7 +99,7 @@ function composeNoteWithMonitors(body: string, monitors: string[]): string {
 const PACKAGE_INFO_PAGE_SIZE = 5
 
 const packageVideoSampleModules = import.meta.glob(
-  '../demo資料/包裹案件資料/videoSample/*.{mp4,webm,mov,ogg}',
+  '../data/demo/package/videoSample/*.{mp4,webm,mov,ogg}',
   { eager: true, import: 'default' },
 ) as Record<string, string>
 
@@ -696,13 +696,13 @@ function App() {
   useEffect(() => {
     let isCancelled = false
 
-    const PACKAGE_CSV_URL = new URL('../demo資料/包裹案件資料/dataTable.csv', import.meta.url).toString()
+    const PACKAGE_CSV_URL = new URL('../data/demo/package/dataTable.csv', import.meta.url).toString()
     const PACKAGE_DETAIL_CSV_URL = new URL(
-      '../demo資料/包裹案件資料/packageDetail.csv',
+      '../data/demo/package/packageDetail.csv',
       import.meta.url,
     ).toString()
-    const KIOSK_CSV_URL = new URL('../demo資料/繳費機案件資料/dataTable.csv', import.meta.url).toString()
-    const LIVE_CSV_URL = new URL('../demo資料/即時查詢資料/dataTable.csv', import.meta.url).toString()
+    const KIOSK_CSV_URL = new URL('../data/demo/kiosk/dataTable.csv', import.meta.url).toString()
+    const LIVE_CSV_URL = new URL('../data/demo/live/dataTable.csv', import.meta.url).toString()
 
     async function load() {
       try {
@@ -1001,7 +1001,7 @@ function App() {
     [packageDetailTab, packageRowsFiltered, packageTrackingNumbers],
   )
 
-  /** 案件資訊：包裹配送編號與 demo資料/包裹案件資料/dataTable.csv 案件列一致（不依門市上架子 tab 覆寫） */
+  /** 案件資訊：包裹配送編號與 data/demo/package/dataTable.csv 案件列一致（不依門市上架子 tab 覆寫） */
   const packageCaseInfoTableRow = useMemo(() => {
     const row = selectedPackageRow
     const deliveryNo = normalizeText(row?.['包裹配送編號']) || '—'
