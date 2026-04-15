@@ -22,7 +22,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # 預設 checkout 不拉 Git LFS，videoSample 的 *.mp4 會是指標檔，建置後影片無法播放
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
