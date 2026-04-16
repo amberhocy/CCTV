@@ -188,6 +188,24 @@ function parseLooseDateTimeToMs(input: string) {
   return Number.isNaN(ms) ? null : ms
 }
 
+/** 列表列排序：依時間欄位由新到舊；無法解析者置底 */
+function sortCsvRowsByTimeDesc(
+  rows: CsvTableRow[],
+  primaryKey: string,
+  fallbackKey?: string,
+): CsvTableRow[] {
+  const timeMs = (r: CsvTableRow) => {
+    const p = parseLooseDateTimeToMs(normalizeText(r[primaryKey]))
+    if (p != null) return p
+    if (fallbackKey) {
+      const f = parseLooseDateTimeToMs(normalizeText(r[fallbackKey]))
+      if (f != null) return f
+    }
+    return 0
+  }
+  return [...rows].sort((a, b) => timeMs(b) - timeMs(a))
+}
+
 function parseCsvLine(line: string) {
   const cells: string[] = []
   let i = 0
@@ -1116,7 +1134,7 @@ function App() {
     const caseIdNeedle = normalizeText(packageFilters.caseId)
     const trackingNeedle = normalizeText(packageFilters.trackingNo)
     const [fromMs, toMs] = packageFilters.dateRange ?? [null, null]
-    return packageTable.rows.filter((r) => {
+    const filtered = packageTable.rows.filter((r) => {
       const caseId = normalizeText(r['案件編號'])
       const trackingNo = normalizeText(r['包裹配送編號'])
       if (!includesInsensitive(caseId, caseIdNeedle)) return false
@@ -1131,6 +1149,7 @@ function App() {
       }
       return true
     })
+    return sortCsvRowsByTimeDesc(filtered, '案件建立時間')
   }, [packageFilters.caseId, packageFilters.dateRange, packageFilters.trackingNo, packageTable.rows])
 
   const filteredKioskRows = useMemo(() => {
@@ -1153,7 +1172,7 @@ function App() {
     const vendorKey = vendorMap[vendorNeedle] ?? vendorNeedle
     const abnormalKey = abnormalMap[abnormalNeedle] ?? abnormalNeedle
 
-    return kioskTable.rows.filter((r) => {
+    const filtered = kioskTable.rows.filter((r) => {
       const storeId = normalizeText(r['門市編號'])
       const storeName = normalizeText(r['門市名稱'])
       const taskId = normalizeText(r['任務編號'])
@@ -1170,7 +1189,10 @@ function App() {
       if (abnormalKey && !includesInsensitive(abnormal, abnormalKey)) return false
 
       if (fromMs || toMs) {
-        const created = normalizeText(r['案件建立時間'])
+        const created =
+          normalizeText(r['更新時間']) ||
+          normalizeText(r['異常發生時間']) ||
+          normalizeText(r['案件建立時間'])
         const createdMs = parseLooseDateTimeToMs(created)
         if (createdMs == null) return false
         if (fromMs && createdMs < fromMs) return false
@@ -1178,6 +1200,7 @@ function App() {
       }
       return true
     })
+    return sortCsvRowsByTimeDesc(filtered, '更新時間', '異常發生時間')
   }, [
     kioskFilters.abnormal,
     kioskFilters.dateRange,
@@ -1190,7 +1213,7 @@ function App() {
   const filteredLiveRows = useMemo(() => {
     const trackingList = liveFilters.trackingNos ?? []
     const [fromMs, toMs] = liveFilters.dateRange ?? [null, null]
-    return liveAllRows.filter((r) => {
+    const filtered = liveAllRows.filter((r) => {
       const trackingNo = normalizeText(r['包裹配送編號'])
       if (trackingList.length > 0 && !trackingList.includes(trackingNo)) return false
 
@@ -1203,6 +1226,7 @@ function App() {
       }
       return true
     })
+    return sortCsvRowsByTimeDesc(filtered, '查詢建立時間')
   }, [liveAllRows, liveFilters.dateRange, liveFilters.trackingNos])
 
   /** 詳情「上一筆／下一筆」：依進入詳情時的分頁來源，走該列表目前篩選結果順序 */
